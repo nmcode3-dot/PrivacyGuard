@@ -578,7 +578,7 @@
     }
 
     // Handle the user's request to block camera access.
-    block.addEventListener("click", () => {
+    function blockCamera() {
 
       // Disable the button while the permission change is being processed.
       block.disabled = true;
@@ -624,6 +624,7 @@
             // Turn the same button into an option to restore camera permission.
             block.textContent = "Allow camera again";
             block.style.background = "#18794e";
+            block.removeEventListener("click", blockCamera);
             block.addEventListener("click", unblockCamera);
 
             // Change Dismiss into a Close button.
@@ -640,7 +641,8 @@
         // Explain how the user can block camera access manually in Chrome.
         detail.textContent = "Could not contact PrivacyGuard. Open this site's camera permission in Chrome settings and set it to Block.";
       }
-    });
+    }
+    block.addEventListener("click", blockCamera);
 
     // Add both buttons to the warning.
     actions.append(block, dismiss);
