@@ -10,19 +10,23 @@
   <main>
     <div class="brand"><div class="shield">✓</div><div><h1>PrivacyGuard</h1><p class="subtitle">Your information. Your choice.</p></div></div>
     <div class="status"><span class="dot"></span><strong>Free local protection is active</strong></div>
-    <p class="description">PrivacyGuard checks message text and supported web forms on your device before you share it.</p>
+    <section class="risk-card" aria-live="polite">
+      <div class="risk-heading"><h2>Website risk rating</h2><span id="risk-label" class="risk-label">Checking…</span></div>
+      <div class="score-row"><strong id="risk-score">—</strong><span>/ 100</span></div>
+      <div class="meter"><div id="risk-meter"></div></div>
+      <p id="site-name" class="site-name">Checking current website…</p>
+      <ul id="risk-reasons" class="risk-reasons"><li>Reviewing the website address</li></ul>
+      <p id="risk-disclaimer" class="risk-disclaimer">This is a local URL-based estimate, not a reputation database or a guarantee of safety.</p>
+    </section>
+    <p class="description">PrivacyGuard checks website address warning signs on your device. It also checks supported messages before you share sensitive information.</p>
     <div class="checks">
-      <div><span>Email addresses</span><b>On</b></div>
-      <div><span>US phone numbers</span><b>On</b></div>
-      <div><span>US Social Security numbers</span><b>On</b></div>
-      <div><span>Payment card numbers</span><b>On</b></div>
-      <div><span>Password and verification-code phrases</span><b>On</b></div>
-      <div><span>Common API keys and access tokens</span><b>On</b></div>
-      <div><span>Private-key markers</span><b>On</b></div>
-      <div><span>Bank-account number phrases</span><b>On</b></div>
+      <div><span>Local sensitive-data detection</span><b>On</b></div>
+      <div><span>Gmail compose protection</span><b>On</b></div>
       <div><span>Active camera stream alerts</span><b>On</b></div>
+      <div><span>Website risk rating</span><b>On</b></div>
     </div>
-    <p class="footnote">No account, API key, subscription, or model download is required. Scanning runs locally and does not upload message text. Password input fields are not read. Detection can miss information or flag harmless text, and some websites may use send methods this prototype cannot intercept.</p>
+    <p class="footnote">No account, API key, subscription, or model download is required. Website checks use the current tab's URL only; browsing data is not uploaded. A low-risk score does not prove a site is safe.</p>
   </main>
+  <script src="popup.js"></script>
 </body>
 </html>
