@@ -1,12 +1,23 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- Character encoding keeps text and symbols readable. -->
   <meta charset="utf-8">
+
+  <!-- Make the installation page adapt to phone, tablet, and desktop widths. -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Short description used by search engines and link previews. -->
   <meta name="description" content="PrivacyGuard is a free Chrome extension that helps you notice potential privacy and security risks while browsing.">
+
   <title>PrivacyGuard</title>
+
+  <!-- The page uses a small embedded stylesheet, so it has no external CSS dependency. -->
   <style>
+    /* Include padding and borders in the size calculations for all elements. */
     * { box-sizing: border-box; }
+
+    /* Set the default font, colors, spacing, and page background. */
     body {
       margin: 0;
       background: #fff;
@@ -15,44 +26,68 @@
       font-size: 16px;
       line-height: 1.6;
     }
+
+    /* Keep the page content at a readable maximum width and center it. */
     .container {
       width: min(760px, calc(100% - 40px));
       margin: 0 auto;
     }
+
+    /* Header divider and vertical spacing. */
     header {
       border-bottom: 1px solid #e5e5e5;
       padding: 18px 0;
     }
+
+    /* Put the project name and GitHub link on opposite sides of the header. */
     header .container {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 20px;
     }
+
+    /* Make the project name stand out from the navigation link. */
     .brand {
       font-size: 18px;
       font-weight: 700;
     }
+
+    /* Set a consistent link color throughout the page. */
     a { color: #2457a7; }
     header a, footer a { font-size: 14px; }
+
+    /* Add whitespace around the main installation instructions. */
     main { padding: 56px 0 64px; }
+
+    /* Main page heading. */
     h1 {
       margin: 0 0 12px;
       font-size: 36px;
       line-height: 1.2;
       font-weight: 700;
     }
+
+    /* Section headings for installation, features, and privacy. */
     h2 {
       margin: 42px 0 10px;
       font-size: 22px;
       line-height: 1.3;
     }
+
+    /* Smaller heading style, available for nested sections. */
     h3 {
       margin: 20px 0 4px;
       font-size: 16px;
     }
+
+    /* Give paragraphs consistent bottom spacing. */
     p { margin: 0 0 14px; }
+
+    /* Optional intro text style, with a narrower line length. */
     .intro { max-width: 650px; color: #555; }
+
+    /* Style the ZIP download link so it looks like the main action. */
     .download {
       display: inline-block;
       margin: 18px 0 8px;
@@ -63,28 +98,44 @@
       border-radius: 4px;
       font-weight: 700;
     }
+
+    /* Darken the download link slightly when the pointer is over it. */
     .download:hover { background: #194580; }
+
+    /* Smaller, muted text for update instructions and notes. */
     .note { color: #666; font-size: 14px; }
+
+    /* Indent the numbered installation steps and space out each item. */
     ol { padding-left: 22px; }
     li { margin: 0 0 12px; padding-left: 3px; }
+
+    /* Make browser paths and filenames visually distinct from normal text. */
     code {
       font-family: monospace;
       background: #f3f3f3;
       padding: 2px 4px;
       border-radius: 3px;
     }
+
+    /* Indent the list describing the extension's main features. */
     .feature-list { padding-left: 20px; }
+
+    /* Visually separate the privacy explanation from the rest of the page. */
     .privacy {
       padding: 14px 16px;
       border-left: 3px solid #ddd;
       background: #f7f7f7;
     }
+
+    /* Footer divider, spacing, and muted text color. */
     footer {
       border-top: 1px solid #e5e5e5;
       padding: 20px 0;
       color: #666;
       font-size: 14px;
     }
+
+    /* Adjust spacing and heading size on narrower screens. */
     @media (max-width: 520px) {
       main { padding-top: 38px; }
       h1 { font-size: 30px; }
@@ -93,6 +144,7 @@
   </style>
 </head>
 <body>
+  <!-- Simple header with the project name and a link to its source code. -->
   <header>
     <div class="container">
       <div class="brand">PrivacyGuard</div>
@@ -100,18 +152,25 @@
     </div>
   </header>
 
+  <!-- Main content explains what the extension does and how to install it. -->
   <main class="container">
     <h1>Be protected with PrivacyGuard.</h1>
+
+    <!-- Download the ZIP archive of the repository's main branch. -->
     <a class="download" href="https://github.com/nmcode3-dot/PrivacyGuard/archive/refs/heads/main.zip">Download PrivacyGuard</a>
 
+    <!-- Step-by-step instructions for loading the unpacked extension in Chrome. -->
     <h2>Install PrivacyGuard</h2>
     <ol>
       <li>Click the download button above. Open your Downloads folder and double-click the ZIP file to extract it.</li>
       <li>In Chrome, open <code>chrome://extensions</code>. Turn on <strong>Developer mode</strong>.</li>
       <li>Click <strong>Load unpacked</strong> and select the extracted <code>PrivacyGuard-main</code> folder. Choose the folder that contains <code>manifest.json</code>.</li>
     </ol>
+
+    <!-- Explain how to install future versions without repeating the full setup. -->
     <p class="note">You only need to install it once. To update, download and extract the latest ZIP, then click Reload on the PrivacyGuard card in Chrome extensions.</p>
 
+    <!-- Short overview of the extension's main features. -->
     <h2>What it does</h2>
     <ul class="feature-list">
       <li>Warns when supported forms appear to contain sensitive information.</li>
@@ -120,10 +179,12 @@
       <li>Shows camera activity and available browser permission states in a small dashboard.</li>
     </ul>
 
+    <!-- Explain what the extension does and does not collect. -->
     <h2>Your privacy</h2>
     <p class="privacy">PrivacyGuard is designed to run locally in your browser. It does not require an account or send your browsing history, form contents, camera feed, microphone audio or location coordinates to a PrivacyGuard server. Its checks are limited and cannot guarantee that a website is safe or detect every possible privacy risk. Always review Chrome's permission prompts and settings.</p>
   </main>
 
+  <!-- Footer repeats the link to the open-source repository. -->
   <footer>
     <div class="container">PrivacyGuard · <a href="https://github.com/nmcode3-dot/PrivacyGuard">Open-source project on GitHub</a></div>
   </footer>

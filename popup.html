@@ -1,15 +1,26 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- Set the character encoding so text and symbols display correctly. -->
   <meta charset="utf-8">
+
+  <!-- Make the popup use the available screen width on different devices. -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- The title appears in the browser's popup context. -->
   <title>PrivacyGuard</title>
+
+  <!-- Load the stylesheet that controls the popup's appearance. -->
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
+  <!-- Main container for all content shown in the extension popup. -->
   <main class="app">
+
+    <!-- Brand area: icon, extension name, short description, and local-only label. -->
     <header class="brand">
       <div class="brand-mark" aria-hidden="true">
+        <!-- Inline SVG draws the PrivacyGuard shield icon without an external image. -->
         <svg viewBox="0 0 24 24" fill="none">
           <path d="M12 2.8 20 6v5.2c0 5.1-3.4 8.5-8 10-4.6-1.5-8-4.9-8-10V6l8-3.2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
           <path d="m8.5 12.1 2.2 2.2 4.8-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
@@ -22,6 +33,7 @@
       <span class="version">LOCAL</span>
     </header>
 
+    <!-- General status message explaining that checks run on this device. -->
     <section class="overall-status" aria-label="Extension status">
       <span class="status-indicator" aria-hidden="true"></span>
       <div>
@@ -30,6 +42,7 @@
       </div>
     </section>
 
+    <!-- Live dashboard: JavaScript fills these values using the current tab's status. -->
     <section class="dashboard-card" aria-labelledby="dashboard-title">
       <div class="dashboard-heading">
         <div>
@@ -38,59 +51,82 @@
         </div>
         <span class="live-label"><span></span> LIVE</span>
       </div>
+
+      <!-- Current camera activity detected by the page monitor. -->
       <div class="dashboard-row">
         <span class="dashboard-symbol" aria-hidden="true">◉</span>
         <span class="dashboard-name">Camera activity</span>
         <strong id="camera-activity" class="dashboard-value">Checking</strong>
       </div>
+
+      <!-- Browser permission state for camera access. -->
       <div class="dashboard-row">
         <span class="dashboard-symbol" aria-hidden="true">◉</span>
         <span class="dashboard-name">Camera permission</span>
         <strong id="camera-permission" class="dashboard-value">Checking</strong>
       </div>
+
+      <!-- Browser permission state for microphone access; this does not read microphone audio. -->
       <div class="dashboard-row">
         <span class="dashboard-symbol" aria-hidden="true">▣</span>
         <span class="dashboard-name">Microphone permission</span>
         <strong id="microphone-permission" class="dashboard-value">Checking</strong>
       </div>
+
+      <!-- Browser permission state for geolocation; this does not read location coordinates. -->
       <div class="dashboard-row">
         <span class="dashboard-symbol" aria-hidden="true">⌖</span>
         <span class="dashboard-name">Location permission</span>
         <strong id="location-permission" class="dashboard-value">Checking</strong>
       </div>
+
+      <!-- JavaScript changes this note depending on which permission details the browser supports. -->
       <p id="dashboard-note" class="dashboard-note">Permission status is read from this browser tab. Activity detection has limitations.</p>
     </section>
 
+    <!-- Website risk section: popup.js calculates the score and inserts the findings. -->
     <section class="risk-card" aria-live="polite" aria-labelledby="risk-title">
       <div class="section-heading">
         <div>
           <p class="eyebrow">CURRENT TAB</p>
           <h2 id="risk-title">Website risk check</h2>
         </div>
+        <!-- The class and text are updated to show the current risk level. -->
         <span id="risk-label" class="risk-label na">Checking</span>
       </div>
 
+      <!-- Numeric URL risk score and its maximum possible value. -->
       <div class="score-line">
         <strong id="risk-score" class="score">—</strong>
         <span class="score-total">/ 100</span>
       </div>
+
+      <!-- The inner meter width is changed by JavaScript to match the score. -->
       <div class="meter" role="presentation"><div id="risk-meter"></div></div>
+
+      <!-- The current website's hostname is inserted here. -->
       <p id="site-name" class="site-name">Checking current website…</p>
 
+      <!-- The list below is populated with the URL warning signs found by popup.js. -->
       <div class="findings">
         <p class="findings-title">What we found</p>
         <ul id="risk-reasons" class="risk-reasons">
           <li>Reviewing the website address</li>
         </ul>
       </div>
+
+      <!-- Explain the limits of the URL-based score. -->
       <p id="risk-disclaimer" class="risk-disclaimer">This score checks URL patterns only. It is not a malware scan or a guarantee that a site is safe.</p>
     </section>
 
+    <!-- Static list of the protection features included in the extension. -->
     <section class="features" aria-labelledby="features-title">
       <div class="features-heading">
         <h2 id="features-title">Protection features</h2>
         <span>ENABLED</span>
       </div>
+
+      <!-- Sensitive-information detection feature. -->
       <div class="feature-row">
         <span class="feature-icon" aria-hidden="true">
           <svg viewBox="0 0 20 20" fill="none"><path d="M4 5.5h12v9H4zM4 7l6 4 6-4" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
@@ -98,6 +134,8 @@
         <div class="feature-copy"><strong>Sensitive information</strong><p>Flags common private details before form submission.</p></div>
         <span class="feature-state">On</span>
       </div>
+
+      <!-- Gmail compose protection feature. -->
       <div class="feature-row">
         <span class="feature-icon" aria-hidden="true">
           <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="5" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 8h8M6 11h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
@@ -105,6 +143,8 @@
         <div class="feature-copy"><strong>Gmail compose protection</strong><p>Checks supported message content before sending.</p></div>
         <span class="feature-state">On</span>
       </div>
+
+      <!-- Camera activity alert feature. -->
       <div class="feature-row">
         <span class="feature-icon" aria-hidden="true">
           <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="6" width="10" height="8" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="m13 9 4-2v6l-4-2" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
@@ -112,6 +152,8 @@
         <div class="feature-copy"><strong>Camera activity alerts</strong><p>Alerts when supported pages start a camera stream.</p></div>
         <span class="feature-state">On</span>
       </div>
+
+      <!-- Website URL risk rating feature. -->
       <div class="feature-row">
         <span class="feature-icon" aria-hidden="true">
           <svg viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="m13 13 4 4M9 6v3l2 1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
@@ -121,11 +163,14 @@
       </div>
     </section>
 
+    <!-- Privacy reminder shown at the bottom of the popup. -->
     <footer class="privacy-note">
       <span class="privacy-icon" aria-hidden="true">i</span>
       <p><strong>Your data stays on your device.</strong> PrivacyGuard does not upload the URLs or sensitive text it checks. These checks have limitations and cannot guarantee protection.</p>
     </footer>
   </main>
+
+  <!-- Load the JavaScript after the popup HTML so all elements already exist. -->
   <script src="popup.js"></script>
 </body>
 </html>
