@@ -1,21 +1,28 @@
 # PrivacyGuard 🛡️
 
-A lightweight Chrome extension prototype that detects some potentially sensitive information in regular HTML forms before submission.
+A free Chrome extension prototype that warns users about potentially sensitive information before they share text.
 
-## What it currently detects
+## What it detects
 
 - Email addresses
-- US-style phone numbers
+- Common US phone number formats
 - US Social Security number patterns
-- Possible payment card numbers (with a Luhn checksum check)
+- Possible payment card numbers (validated with the Luhn checksum)
+- Password, passcode, and verification-code phrases when followed by a value
+- Common API keys and access tokens (recognizable GitHub, Slack, AWS, and `sk-` formats)
+- Private cryptographic key headers
+- Possible bank account or routing numbers when introduced by a matching phrase
 
-When a matching value is found in a regular HTML form, PrivacyGuard pauses submission and lets the user go back or submit anyway.
+## Gmail support
 
-## Privacy approach
+PrivacyGuard includes best-effort support for Gmail's custom compose editor and Send button, including the Ctrl/Cmd+Enter shortcut. It reads the subject and message body when it can identify them. Gmail's interface changes over time, so this integration must be tested against current Gmail behavior and is not guaranteed to intercept every send path.
 
-- Detection runs locally in the browser content script.
-- This prototype does not send scanned text to a server.
-- Password input fields are intentionally excluded.
+## Privacy
+
+- Detection runs locally in the browser.
+- No API key, account, paid service, external AI model, or backend is required.
+- Message text is not uploaded by PrivacyGuard.
+- Password input fields are deliberately excluded.
 - The extension does not store detected values.
 
 ## Install locally
@@ -24,45 +31,26 @@ When a matching value is found in a regular HTML form, PrivacyGuard pauses submi
 2. Open `chrome://extensions` in Google Chrome.
 3. Turn on **Developer mode**.
 4. Select **Load unpacked**.
-5. Choose the `privacyguard` project folder.
-
-## Project files
-
-- `manifest.json` — Chrome Extension Manifest V3 configuration.
-- `content.js` — local detection and pre-submit warning.
-- `popup.html` and `popup.css` — extension popup interface.
+5. Choose the unzipped project folder.
+6. Refresh any open Gmail tabs after reloading the extension.
 
 ## Current limitations
 
-This is an early prototype, not a complete privacy or security product.
+This is a hackathon prototype and a warning aid, not a complete security product.
 
-- It currently checks regular HTML form submissions. Many modern websites, including some chat apps, send messages through JavaScript handlers without a normal form submit event.
-- It does not yet inspect `contenteditable` editors, file uploads, screenshots, or clipboard contents.
 - Pattern matching can produce false positives and false negatives.
+- Contextual patterns recognize common wording and formats; they do not understand every meaning or privacy risk.
 - A Luhn-valid number is not proof that a number is an active payment card.
-- The phone and SSN checks are tailored to common US formats.
-- It does not automatically redact information.
+- Gmail's DOM and event handling can change, and some send paths may bypass the extension.
+- Some websites use custom JavaScript submission flows that are not covered by ordinary form interception.
+- The extension does not automatically redact information.
 
-Always review what you are sharing. PrivacyGuard is a warning aid, not a guarantee that sensitive data will be blocked.
-
-## Roadmap
-
-- [ ] Live scanning while typing
-- [ ] Support for contenteditable editors and selected AI chat interfaces
-- [ ] User-configurable detection categories
-- [ ] Optional redaction with user confirmation
-- [ ] Unit tests for detection patterns
-- [ ] Accessibility and browser compatibility testing
+Always review what you are sharing. A clean scan does not prove that a message is safe.
 
 ## Development
 
-No build step or external dependencies are required for this prototype.
+No build step or external dependencies are required.
 
 ## License
 
 MIT — see `LICENSE`.
-
-
-## Local detection upgrade
-
-The extension is being updated to recognize additional sensitive-data patterns and improve best-effort Gmail compose protection without any paid API or external AI service.
