@@ -253,4 +253,41 @@
     if (event.data.type === "CAMERA_INACTIVE" && !cameraBlockedNotice) removeCameraNotice();
   });
 
+
+  // Live dashboard status. Only permission states and camera activity are reported;
+  // no page content, camera frames, audio, or location coordinates are collected.
+  let privacyGuardCameraActive = false;
+  window.addEventListener("message", event => {
+    if (event.source !== window || event.data?.privacyGuardCamera !== true) return;
+    if (event.data.type === "CAMERA_ACTIVE") privacyGuardCameraActive = true;
+    if (event.data.type === "CAMERA_INACTIVE") privacyGuardCameraActive = false;
+  });
+
+  async function readPermission(name) {
+    try {
+      if (!navigator.permissions?.query) return "unsupported";
+      const result = await navigator.permissions.query({ name });
+      return result.state || "unknown";
+    } catch (_) {
+      return "unsupported";
+    }
+  }
+
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message?.type !== "PRIVACYGUARD_GET_DASHBOARD") return;
+    Promise.all([
+      readPermission("camera"),
+      readPermission("microphone"),
+      readPermission("geolocation")
+    ]).then(([camera, microphone, location]) => {
+      sendResponse({
+        cameraActive: privacyGuardCameraActive,
+        cameraPermission: camera,
+        microphonePermission: microphone,
+        locationPermission: location
+      });
+    });
+    return true;
+  });
+
 })();
