@@ -261,6 +261,14 @@
     if (event.source !== window || event.data?.privacyGuardCamera !== true) return;
     if (event.data.type === "CAMERA_ACTIVE") privacyGuardCameraActive = true;
     if (event.data.type === "CAMERA_INACTIVE") privacyGuardCameraActive = false;
+    if (event.data.type === "CAMERA_ACTIVE" || event.data.type === "CAMERA_INACTIVE") {
+      try {
+        chrome.runtime.sendMessage({
+          type: "PRIVACYGUARD_CAMERA_STATUS",
+          active: privacyGuardCameraActive
+        });
+      } catch (_) {}
+    }
   });
 
   async function readPermission(name) {
