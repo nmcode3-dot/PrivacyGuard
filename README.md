@@ -57,3 +57,17 @@ PrivacyGuard includes best-effort support for Gmail's custom compose editor and 
 
 No build step or external dependencies are required.
 
+## Understanding the Chrome extension manifest
+
+The `manifest.json` file tells Chrome how to load PrivacyGuard. JSON does not support comments, so explanations for its settings are documented here instead of being inserted into that file.
+
+- `manifest_version: 3`: Uses Chrome's Manifest V3 extension format.
+- `name`, `version`, and `description`: Provide the extension's display name, version number, and short description.
+- `action.default_title`: Sets the title shown for the PrivacyGuard toolbar action.
+- `action.default_popup`: Opens `popup.html` when the user clicks the extension icon.
+- `content_scripts`: Tells Chrome which scripts to load on matching webpages.
+  - The first entry loads `content.js` after the page has loaded enough for the document to be available.
+  - The second entry loads `camera-monitor.js` at the start of page loading in the page's MAIN JavaScript world. It also runs in all frames where Chrome allows it.
+- `permissions`: Requests the extension APIs it uses. `contentSettings` lets the background script change a site's camera permission; `activeTab` allows the popup to inspect the active tab after the user invokes the extension.
+- `background.service_worker`: Identifies `background.js` as the extension's service worker, which handles extension messages and browser-level actions.
+- `host_permissions`: Allows the extension's content scripts to be injected on matching website URLs. Chrome may still restrict special browser pages and other protected contexts.
