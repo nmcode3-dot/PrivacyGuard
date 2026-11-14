@@ -3,120 +3,131 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f7f8fa">
-  <meta name="description" content="PrivacyGuard helps you spot privacy risks while browsing. Free, local-first Chrome protection.">
-  <title>PrivacyGuard — Browse with more awareness</title>
+  <meta name="description" content="PrivacyGuard is a free Chrome extension that helps you notice potential privacy and security risks while browsing.">
+  <title>PrivacyGuard</title>
   <style>
-    :root{color-scheme:light;--ink:#17202b;--muted:#657180;--line:#e5e9ee;--paper:#fff;--wash:#f7f8fa;--blue:#2457c5;--blue-dark:#1d469f;--green:#18794e}
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--wash);color:var(--ink);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    a{color:inherit}
-    .wrap{width:min(920px,calc(100% - 40px));margin:auto}
-    header{height:76px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.88)}
-    .nav{height:100%;display:flex;align-items:center;justify-content:space-between}
-    .brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:-.3px}
-    .mark{width:34px;height:34px;border:1px solid #d8e0ed;border-radius:10px;display:grid;place-items:center;background:#fff}
-    .mark svg{width:20px;height:20px}
-    .nav a{font-size:14px;color:var(--muted);text-decoration:none}
-    main{padding:76px 0 54px}
-    .eyebrow{font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--blue);text-transform:uppercase}
-    h1{font-size:clamp(38px,6vw,58px);line-height:1.08;letter-spacing:-2.4px;margin:14px 0 18px;max-width:700px}
-    .lead{font-size:18px;color:var(--muted);max-width:650px;margin:0}
-    .actions{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin:30px 0 12px}
-    .button{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--blue);color:white;text-decoration:none;padding:13px 19px;border-radius:8px;font-weight:650;box-shadow:0 1px 2px #15294b20}
-    .button:hover{background:var(--blue-dark)}
-    .small-link{font-size:14px;color:var(--muted)}
-    .fine{font-size:13px;color:var(--muted)}
-    .trust{display:flex;gap:20px;flex-wrap:wrap;margin-top:26px;color:#465363;font-size:13px}
-    .trust span:before{content:"✓";color:var(--green);font-weight:800;margin-right:7px}
-    section{margin-top:62px}
-    h2{font-size:24px;letter-spacing:-.6px;margin:0 0 8px}
-    .section-intro{color:var(--muted);margin:0 0 22px}
-    .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .step,.feature,.privacy{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px}
-    .number{width:27px;height:27px;border:1px solid #d8e0ed;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;color:var(--blue);margin-bottom:14px}
-    .step h3,.feature h3{font-size:16px;margin:0 0 7px}
-    .step p,.feature p{font-size:14px;color:var(--muted);margin:0}
-    code{background:#f0f2f5;border:1px solid #e7e9ed;border-radius:4px;padding:1px 5px;font-size:12px}
-    .features{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-    .feature{padding:18px}
-    .feature .tag{font-size:11px;color:var(--green);font-weight:700;letter-spacing:.8px;text-transform:uppercase}
-    .feature h3{margin-top:6px}
-    .privacy{display:flex;gap:15px;align-items:flex-start}
-    .privacy svg{flex:0 0 24px;color:var(--green);margin-top:2px}
-    .privacy p{margin:0;color:var(--muted);font-size:14px}
-    footer{border-top:1px solid var(--line);padding:24px 0 36px;color:var(--muted);font-size:13px}
-    footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
-    @media(max-width:650px){main{padding-top:52px}.steps,.features{grid-template-columns:1fr}section{margin-top:46px}.privacy{padding:17px}h1{letter-spacing:-1.6px}}
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #fff;
+      color: #222;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .container {
+      width: min(760px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+    header {
+      border-bottom: 1px solid #e5e5e5;
+      padding: 18px 0;
+    }
+    header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+    .brand {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    a { color: #2457a7; }
+    header a, footer a { font-size: 14px; }
+    main { padding: 56px 0 64px; }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 36px;
+      line-height: 1.2;
+      font-weight: 700;
+    }
+    h2 {
+      margin: 42px 0 10px;
+      font-size: 22px;
+      line-height: 1.3;
+    }
+    h3 {
+      margin: 20px 0 4px;
+      font-size: 16px;
+    }
+    p { margin: 0 0 14px; }
+    .intro { max-width: 650px; color: #555; }
+    .download {
+      display: inline-block;
+      margin: 18px 0 8px;
+      padding: 10px 16px;
+      background: #2457a7;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    .download:hover { background: #194580; }
+    .note { color: #666; font-size: 14px; }
+    ol { padding-left: 22px; }
+    li { margin: 0 0 12px; padding-left: 3px; }
+    code {
+      font-family: monospace;
+      background: #f3f3f3;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .feature-list { padding-left: 20px; }
+    .privacy {
+      padding: 14px 16px;
+      border-left: 3px solid #ddd;
+      background: #f7f7f7;
+    }
+    footer {
+      border-top: 1px solid #e5e5e5;
+      padding: 20px 0;
+      color: #666;
+      font-size: 14px;
+    }
+    @media (max-width: 520px) {
+      main { padding-top: 38px; }
+      h1 { font-size: 30px; }
+      header .container { align-items: flex-start; flex-direction: column; gap: 4px; }
+    }
   </style>
 </head>
 <body>
   <header>
-    <div class="wrap nav">
-      <div class="brand">
-        <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#2457c5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 20 6v5c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6l8-3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>
-        PrivacyGuard
-      </div>
-      <a href="https://github.com/nmcode3-dot/PrivacyGuard" target="_blank" rel="noreferrer">View source on GitHub ↗</a>
+    <div class="container">
+      <div class="brand">PrivacyGuard</div>
+      <a href="https://github.com/nmcode3-dot/PrivacyGuard">View on GitHub</a>
     </div>
   </header>
 
-  <main class="wrap">
-    <div class="eyebrow">Free Chrome extension</div>
-    <h1>More awareness.<br>Safer browsing.</h1>
-    <p class="lead">PrivacyGuard helps you notice potential privacy and security risks while you browse — from sensitive information in forms to camera activity and suspicious website signals.</p>
-    <div class="actions">
-      <a class="button" href="https://github.com/nmcode3-dot/PrivacyGuard/archive/refs/heads/main.zip">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/></svg>
-        Download for Chrome
-      </a>
-      <a class="small-link" href="#install">See installation steps ↓</a>
-    </div>
-    <div class="fine">Free to use · No account required · Chrome on desktop</div>
-    <div class="trust"><span>Runs locally in your browser</span><span>No subscription</span><span>Open source</span></div>
+  <main class="container">
+    <h1>Browse with more awareness.</h1>
+    <p class="intro">PrivacyGuard is a free Chrome extension that helps you notice potential privacy and security risks while browsing.</p>
+    <a class="download" href="https://github.com/nmcode3-dot/PrivacyGuard/archive/refs/heads/main.zip">Download PrivacyGuard</a>
+    <p class="note">Free to use. No account required. For Google Chrome on desktop.</p>
 
-    <section id="install">
-      <h2>Get started in about a minute</h2>
-      <p class="section-intro">Install the downloaded folder in Chrome. You only need to do this once.</p>
-      <div class="steps">
-        <article class="step">
-          <div class="number">1</div>
-          <h3>Download and unzip</h3>
-          <p>Click <strong>Download for Chrome</strong> above. Open your Downloads folder and double-click <code>PrivacyGuard-main.zip</code> to extract it.</p>
-        </article>
-        <article class="step">
-          <div class="number">2</div>
-          <h3>Open Chrome extensions</h3>
-          <p>In Google Chrome, enter <code>chrome://extensions</code> in the address bar. Turn on <strong>Developer mode</strong> using the switch near the top-right.</p>
-        </article>
-        <article class="step">
-          <div class="number">3</div>
-          <h3>Load PrivacyGuard</h3>
-          <p>Click <strong>Load unpacked</strong>. Select the extracted <code>PrivacyGuard-main</code> folder — the one containing <code>manifest.json</code>.</p>
-        </article>
-      </div>
-      <p class="fine" style="margin-top:16px">If Chrome asks for permission, review the requested permissions before continuing. To update later, download and extract the latest version, then use Reload on the PrivacyGuard card in <code>chrome://extensions</code>.</p>
-    </section>
+    <h2>Install PrivacyGuard</h2>
+    <ol>
+      <li>Click the download button above. Open your Downloads folder and double-click the ZIP file to extract it.</li>
+      <li>In Chrome, open <code>chrome://extensions</code>. Turn on <strong>Developer mode</strong>.</li>
+      <li>Click <strong>Load unpacked</strong> and select the extracted <code>PrivacyGuard-main</code> folder. Choose the folder that contains <code>manifest.json</code>.</li>
+    </ol>
+    <p class="note">You only need to install it once. To update, download and extract the latest ZIP, then click Reload on the PrivacyGuard card in Chrome extensions.</p>
 
-    <section>
-      <h2>What it helps you watch for</h2>
-      <p class="section-intro">A set of practical checks in one small browser extension.</p>
-      <div class="features">
-        <article class="feature"><div class="tag">Form protection</div><h3>Sensitive information alerts</h3><p>Warns about common sensitive details, such as email addresses, phone numbers, payment-card patterns and exposed tokens, before supported forms are submitted.</p></article>
-        <article class="feature"><div class="tag">Device awareness</div><h3>Camera activity alerts</h3><p>Notifies you when it detects a website starting a camera stream and offers a way to block camera access for that site.</p></article>
-        <article class="feature"><div class="tag">Site checks</div><h3>Website risk signals</h3><p>Checks the current address for suspicious URL patterns and explains which signals affected its local risk rating.</p></article>
-        <article class="feature"><div class="tag">At a glance</div><h3>Live privacy dashboard</h3><p>Shows detected camera activity and available browser permission states for camera, microphone and location.</p></article>
-      </div>
-    </section>
+    <h2>What it does</h2>
+    <ul class="feature-list">
+      <li>Warns when supported forms appear to contain sensitive information.</li>
+      <li>Alerts when it detects a website starting a camera stream.</li>
+      <li>Checks website addresses for suspicious URL patterns.</li>
+      <li>Shows camera activity and available browser permission states in a small dashboard.</li>
+    </ul>
 
-    <section>
-      <h2>Privacy comes first</h2>
-      <div class="privacy">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 20 6v5c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6l8-3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg>
-        <p><strong>PrivacyGuard is designed to work locally.</strong> It does not require an account or send your browsing history, form contents, camera feed, microphone audio or location coordinates to a PrivacyGuard server. Its checks are limited and best-effort: an alert or a low-risk rating cannot guarantee that a website is safe or that every form of tracking or camera access has been detected. Review Chrome's permission prompts and settings too.</p>
-      </div>
-    </section>
+    <h2>Your privacy</h2>
+    <p class="privacy">PrivacyGuard is designed to run locally in your browser. It does not require an account or send your browsing history, form contents, camera feed, microphone audio or location coordinates to a PrivacyGuard server. Its checks are limited and cannot guarantee that a website is safe or detect every possible privacy risk. Always review Chrome's permission prompts and settings.</p>
   </main>
-  <footer><div class="wrap"><span>PrivacyGuard · Free and open source</span><a href="https://github.com/nmcode3-dot/PrivacyGuard">Source code and project details</a></div></footer>
+
+  <footer>
+    <div class="container">PrivacyGuard · <a href="https://github.com/nmcode3-dot/PrivacyGuard">Open-source project on GitHub</a></div>
+  </footer>
 </body>
 </html>
