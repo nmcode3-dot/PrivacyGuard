@@ -1,39 +1,40 @@
 (() => {
-  // PrivacyGuard: scanning happens locally in this browser tab.
-  // Password fields are deliberately excluded.
+  // All checks run locally. Password input fields are never read.
   const approvedForms = new WeakSet();
   const approvedSendButtons = new WeakSet();
   const patterns = [
     { type: "Email address", regex: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi },
     { type: "US phone number", regex: /(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}\b/g },
     { type: "US Social Security number", regex: /\b(?!000|666|9\d\d)\d{3}-(?!00)\d{2}-(?!0000)\d{4}\b/g },
-    { type: "Possible payment card number", regex: /\b(?:\d[ -]*?){13,19}\b/g, card: true }
+    { type: "Possible payment card number", regex: /\b(?:\d[ -]*?){13,19}\b/g, card: true },
+    { type: "Password or verification code", regex: /\b(?:password|passcode|passphrase|login code|verification code|2fa code|one[- ]time code)\s*(?:is|:|=)\s*["']?[^\s"'<>]{4,}/gi },
+    { type: "API key or access token", regex: /\b(?:sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16})\b/g },
+    { type: "Private cryptographic key", regex: /-----BEGIN (?:RSA |EC |OPENSSH |PGP )?PRIVATE KEY-----/g },
+    { type: "Possible bank account number", regex: /\b(?:bank account|account number|routing number)\s*(?:is|:|=)?\s*\d[\d -]{5,17}\b/gi }
   ];
 
   function passesLuhn(value) {
     const digits = value.replace(/\D/g, "");
     if (digits.length < 13 || digits.length > 19) return false;
-    let sum = 0;
-    let doubleDigit = false;
+    let sum = 0, doubleDigit = false;
     for (let i = digits.length - 1; i >= 0; i--) {
       let digit = Number(digits[i]);
-      if (doubleDigit) {
-        digit *= 2;
-        if (digit > 9) digit -= 9;
-      }
+      if (doubleDigit) { digit *= 2; if (digit > 9) digit -= 9; }
       sum += digit;
       doubleDigit = !doubleDigit;
     }
     return sum % 10 === 0;
   }
 
-  function detect(text) {
+  function detect(value) {
+    const text = String(value || "");
     const findings = [];
     for (const pattern of patterns) {
       pattern.regex.lastIndex = 0;
       for (const match of text.matchAll(pattern.regex)) {
         if (!pattern.card || passesLuhn(match[0])) {
-          findings.push({ type: pattern.type, value: match[0] });
+          findings.push({ type: pattern.type });
+          break;
         }
       }
     }
@@ -41,50 +42,38 @@
   }
 
   function scanForm(form) {
-    const fields = form.querySelectorAll("input:not([type='password']):not([type='hidden']), textarea");
     const findings = [];
-    fields.forEach((field) => {
-      if (field.disabled || field.readOnly) return;
-      findings.push(...detect(field.value || ""));
+    form.querySelectorAll("input:not([type='password']):not([type='hidden']), textarea").forEach(field => {
+      if (!field.disabled && !field.readOnly) findings.push(...detect(field.value || ""));
     });
     return findings;
   }
 
   function showWarning(findings, onContinue) {
-    const existing = document.getElementById("privacyguard-dialog");
-    if (existing) existing.remove();
-
+    document.getElementById("privacyguard-dialog")?.remove();
     const overlay = document.createElement("div");
     overlay.id = "privacyguard-dialog";
-    overlay.style.cssText = "position:fixed;inset:0;z-index:2147483647;background:rgba(10,16,28,.62);display:flex;align-items:center;justify-content:center;padding:20px;font:14px/1.45 Arial,sans-serif;color:#172033;";
-
+    overlay.style.cssText = "position:fixed;inset:0;z-index:2147483647;background:rgba(10,16,28,.68);display:flex;align-items:center;justify-content:center;padding:20px;font:14px/1.45 Arial,sans-serif;color:#172033;";
     const panel = document.createElement("div");
     panel.setAttribute("role", "dialog");
     panel.setAttribute("aria-modal", "true");
-    panel.setAttribute("aria-labelledby", "pg-title");
-    panel.style.cssText = "box-sizing:border-box;width:min(440px,100%);background:#fff;border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.28);";
-
+    panel.style.cssText = "box-sizing:border-box;width:min(460px,100%);background:#fff;border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.28);";
     const title = document.createElement("h2");
-    title.id = "pg-title";
-    title.textContent = "PrivacyGuard found sensitive information";
+    title.textContent = "PrivacyGuard found a possible privacy risk";
     title.style.cssText = "font-size:19px;margin:0 0 8px;color:#172033;";
-
     const intro = document.createElement("p");
-    intro.textContent = "Your message appears to contain information you may not want to share:";
+    intro.textContent = "Check your message before sharing. We detected:";
     intro.style.cssText = "margin:0 0 14px;color:#526071;";
-
     const list = document.createElement("ul");
     list.style.cssText = "margin:0 0 18px;padding-left:20px;color:#172033;";
-    [...new Set(findings.map((item) => item.type))].forEach((type) => {
+    [...new Set(findings.map(item => item.type))].forEach(type => {
       const li = document.createElement("li");
       li.textContent = type;
       list.appendChild(li);
     });
-
     const note = document.createElement("p");
-    note.textContent = "Your text is scanned locally by this extension; PrivacyGuard does not send it to a server. The website may still receive it if you choose to continue.";
+    note.textContent = "This check runs on your device. PrivacyGuard does not upload your message. Detection is a helpful warning, not a guarantee.";
     note.style.cssText = "font-size:12px;color:#667085;margin:0 0 20px;";
-
     const actions = document.createElement("div");
     actions.style.cssText = "display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;";
     const cancel = document.createElement("button");
@@ -93,32 +82,23 @@
     const proceed = document.createElement("button");
     proceed.textContent = "Send anyway";
     proceed.style.cssText = "border:0;background:#b42318;color:#fff;border-radius:9px;padding:10px 14px;cursor:pointer;font-weight:600;";
-
     cancel.addEventListener("click", () => overlay.remove());
-    proceed.addEventListener("click", () => {
-      overlay.remove();
-      onContinue();
-    });
-    overlay.addEventListener("click", (event) => {
-      if (event.target === overlay) overlay.remove();
-    });
-    panel.append(title, intro, list, note, actions);
+    proceed.addEventListener("click", () => { overlay.remove(); onContinue(); });
+    overlay.addEventListener("click", event => { if (event.target === overlay) overlay.remove(); });
     actions.append(cancel, proceed);
+    panel.append(title, intro, list, note, actions);
     overlay.appendChild(panel);
     document.documentElement.appendChild(overlay);
     cancel.focus();
   }
 
-  // Existing protection for ordinary HTML forms on other websites.
-  document.addEventListener("submit", (event) => {
+  // Standard HTML forms.
+  document.addEventListener("submit", event => {
     const form = event.target;
     if (!(form instanceof HTMLFormElement)) return;
-    if (approvedForms.has(form)) {
-      approvedForms.delete(form);
-      return;
-    }
+    if (approvedForms.has(form)) { approvedForms.delete(form); return; }
     const findings = scanForm(form);
-    if (findings.length === 0) return;
+    if (!findings.length) return;
     event.preventDefault();
     event.stopImmediatePropagation();
     showWarning(findings, () => {
@@ -128,90 +108,149 @@
     });
   }, true);
 
-  // Gmail uses a custom compose editor and Send button, not a standard form.
+  // Gmail custom compose editor and Send button.
   if (location.hostname === "mail.google.com") {
-    function isVisible(element) {
-      return !!(element && (element.offsetWidth || element.offsetHeight || element.getClientRects().length));
+    const editorSelector = '[contenteditable="true"], textarea, input[name="subjectbox"]';
+    const visible = el => !!(el && (el.offsetWidth || el.offsetHeight || el.getClientRects().length));
+
+    function isSendButton(el) {
+      if (!el || !visible(el)) return false;
+      const label = [el.getAttribute("aria-label"), el.getAttribute("data-tooltip"), el.getAttribute("title"), el.innerText].filter(Boolean).join(" ").trim();
+      return /^send\b/i.test(label);
     }
 
-    function getComposeRoot(element) {
-      return element?.closest('[role="dialog"]') || element?.closest('[data-message-id]') || element?.parentElement;
+    function getComposeRoot(el) {
+      const dialog = el?.closest?.('[role="dialog"]');
+      if (dialog && dialog.querySelector(editorSelector)) return dialog;
+      let current = el?.parentElement;
+      while (current && current !== document.body) {
+        if (current.querySelector(editorSelector)) return current;
+        current = current.parentElement;
+      }
+      return document;
     }
 
-    function getEditorText(root) {
+    function getComposeText(root) {
       if (!root) return "";
       const parts = [];
-      root.querySelectorAll('[contenteditable="true"], textarea, input[name="subjectbox"]').forEach((field) => {
-        if (field.matches("input, textarea")) parts.push(field.value || "");
-        else parts.push(field.innerText || field.textContent || "");
-      });
+      const subject = root.querySelector('input[name="subjectbox"]');
+      if (subject && !subject.disabled) parts.push(subject.value || "");
+      let editors = [...root.querySelectorAll('[contenteditable="true"][aria-label*="Message Body"], [contenteditable="true"][role="textbox"]')];
+      if (!editors.length) {
+        editors = [...root.querySelectorAll('[contenteditable="true"]')].filter(el => !/recipient|to:|cc:|bcc:/i.test(el.getAttribute("aria-label") || ""));
+      }
+      editors.filter(visible).forEach(el => parts.push(el.innerText || el.textContent || ""));
       return parts.join("\n");
     }
 
-    function getSendButton(root) {
-      const scope = root || document;
-      const buttons = [...scope.querySelectorAll('button, [role="button"]')];
-      return buttons.find((button) => {
-        if (!isVisible(button)) return false;
-        const label = [
-          button.getAttribute("aria-label"),
-          button.getAttribute("data-tooltip"),
-          button.getAttribute("title")
-        ].filter(Boolean).join(" ");
-        return /^send(?:\b|[\s(])/i.test(label.trim());
-      }) || null;
+    function findSendButton(root) {
+      const scope = root && root !== document ? root : document;
+      return [...scope.querySelectorAll('button, [role="button"]')].find(isSendButton) || null;
     }
 
-    function checkGmailSend(button, root) {
-      if (!button || approvedSendButtons.has(button)) {
-        if (button) approvedSendButtons.delete(button);
-        return false;
-      }
-      const text = getEditorText(root);
-      const findings = detect(text);
+    function checkSend(button, root) {
+      if (!button) return false;
+      if (approvedSendButtons.has(button)) { approvedSendButtons.delete(button); return false; }
+      const findings = detect(getComposeText(root));
       if (!findings.length) return false;
-
-      showWarning(findings, () => {
-        approvedSendButtons.add(button);
-        button.click();
-      });
+      showWarning(findings, () => { approvedSendButtons.add(button); button.click(); });
       return true;
     }
 
-    document.addEventListener("click", (event) => {
-      const button = event.target.closest('button, [role="button"]');
-      if (!button) return;
-      const label = [
-        button.getAttribute("aria-label"),
-        button.getAttribute("data-tooltip"),
-        button.getAttribute("title")
-      ].filter(Boolean).join(" ");
-      if (!/^send(?:\b|[\s(])/i.test(label.trim())) return;
-
-      const root = getComposeRoot(button);
-      if (checkGmailSend(button, root)) {
+    document.addEventListener("click", event => {
+      const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+      const button = target?.closest?.('button, [role="button"]');
+      if (!button || !isSendButton(button)) return;
+      if (checkSend(button, getComposeRoot(button))) {
         event.preventDefault();
         event.stopImmediatePropagation();
       }
     }, true);
 
-    document.addEventListener("keydown", (event) => {
+    document.addEventListener("keydown", event => {
       if (!(event.metaKey || event.ctrlKey) || event.key !== "Enter") return;
-      const editor = event.target.closest?.('[contenteditable="true"], textarea, input[name="subjectbox"]');
-      if (!editor) return;
-      const root = getComposeRoot(editor);
-      const text = getEditorText(root);
-      const findings = detect(text);
+      const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+      if (!target?.closest?.(editorSelector)) return;
+      const root = getComposeRoot(target);
+      const findings = detect(getComposeText(root));
       if (!findings.length) return;
-
-      const button = getSendButton(root);
+      const button = findSendButton(root);
       if (!button) return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      showWarning(findings, () => {
-        approvedSendButtons.add(button);
-        button.click();
-      });
+      showWarning(findings, () => { approvedSendButtons.add(button); button.click(); });
     }, true);
   }
+
+  // Camera activity alerts. The MAIN-world monitor reports only whether a
+  // video track is live; no image or audio data is accessed.
+  let cameraNotice = null;
+  let cameraBlockedNotice = false;
+
+  function removeCameraNotice() {
+    cameraNotice?.remove();
+    cameraNotice = null;
+  }
+
+  function showCameraNotice() {
+    if (cameraNotice || cameraBlockedNotice) return;
+    const notice = document.createElement("section");
+    notice.id = "privacyguard-camera-alert";
+    notice.setAttribute("role", "alert");
+    notice.style.cssText = "position:fixed;top:18px;right:18px;z-index:2147483646;width:min(360px,calc(100vw - 36px));box-sizing:border-box;background:#fff;border:1px solid #f0b4ad;border-left:5px solid #c62828;border-radius:12px;padding:16px;box-shadow:0 12px 36px rgba(0,0,0,.24);font:14px/1.45 Arial,sans-serif;color:#172033;";
+    const heading = document.createElement("strong");
+    heading.textContent = "PrivacyGuard: Camera is active";
+    heading.style.cssText = "display:block;font-size:16px;margin-bottom:6px;color:#a61b1b;";
+    const detail = document.createElement("p");
+    detail.textContent = "This website has started a camera stream in this tab. If you did not expect this, block camera access for this site.";
+    detail.style.cssText = "margin:0 0 12px;color:#475467;";
+    const actions = document.createElement("div");
+    actions.style.cssText = "display:flex;gap:8px;align-items:center;flex-wrap:wrap;";
+    const block = document.createElement("button");
+    block.textContent = "Block camera on this site";
+    block.style.cssText = "border:0;background:#b42318;color:#fff;border-radius:8px;padding:9px 11px;cursor:pointer;font-weight:600;";
+    const dismiss = document.createElement("button");
+    dismiss.textContent = "Dismiss";
+    dismiss.style.cssText = "border:1px solid #d0d5dd;background:#fff;color:#344054;border-radius:8px;padding:9px 11px;cursor:pointer;";
+    dismiss.addEventListener("click", removeCameraNotice);
+    block.addEventListener("click", () => {
+      block.disabled = true;
+      block.textContent = "Blocking…";
+      try {
+        chrome.runtime.sendMessage(
+          { type: "PRIVACYGUARD_BLOCK_CAMERA", origin: location.origin },
+          response => {
+            if (chrome.runtime.lastError || !response?.ok) {
+              block.disabled = false;
+              block.textContent = "Try blocking again";
+              detail.textContent = response?.error || chrome.runtime.lastError?.message || "Could not change this site's camera permission. Use the camera icon or site settings in Chrome.";
+              return;
+            }
+            window.postMessage({ privacyGuardCameraCommand: "STOP_ACTIVE_CAMERA" }, "*");
+            cameraBlockedNotice = true;
+            heading.textContent = "Camera blocked for this site";
+            heading.style.color = "#18794e";
+            detail.textContent = "PrivacyGuard stopped the active camera stream and changed this website's Chrome camera permission to Block. You can change it later in Chrome site settings.";
+            block.remove();
+            dismiss.textContent = "Close";
+          }
+        );
+      } catch (_) {
+        block.disabled = false;
+        block.textContent = "Try blocking again";
+        detail.textContent = "Could not contact PrivacyGuard. Open this site's camera permission in Chrome settings and set it to Block.";
+      }
+    });
+    actions.append(block, dismiss);
+    notice.append(heading, detail, actions);
+    document.documentElement.appendChild(notice);
+    cameraNotice = notice;
+  }
+
+  window.addEventListener("message", event => {
+    if (event.source !== window || event.data?.privacyGuardCamera !== true) return;
+    if (event.data.type === "CAMERA_ACTIVE") showCameraNotice();
+    if (event.data.type === "CAMERA_INACTIVE" && !cameraBlockedNotice) removeCameraNotice();
+  });
+
 })();
