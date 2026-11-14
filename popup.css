@@ -262,3 +262,11 @@ h2 { margin: 0; font-size: 13px; font-weight: 650; letter-spacing: -.1px; }
   font-size: 9px;
   line-height: 1.4;
 }
+
+/* Cookie cleaner panel and button. The button only runs after the user clicks it. */
+.cookie-card { margin-top: 12px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+.cookie-description { margin: 7px 0 10px; color: var(--muted); font-size: 10px; line-height: 1.45; }
+.cookie-button { width: 100%; padding: 8px 10px; border: 1px solid #cfd8d2; border-radius: 5px; background: #f3f7f4; color: #285b40; font: inherit; font-size: 11px; font-weight: 650; cursor: pointer; }
+.cookie-button:hover { background: #eaf2ec; }
+.cookie-button:disabled { cursor: wait; opacity: .65; }
+.cookie-status { margin: 8px 0 0; color: var(--muted); font-size: 9px; line-height: 1.4; }
