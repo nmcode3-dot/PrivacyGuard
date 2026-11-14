@@ -84,6 +84,14 @@
       <p id="dashboard-note" class="dashboard-note">Permission status is read from this browser tab. Activity detection has limitations.</p>
     </section>
 
+    <!-- Cookie cleaner: checks this website for a short list of known analytics/ad cookie names. -->
+    <section class="cookie-card" aria-labelledby="cookie-title">
+      <div class="section-heading"><div><p class="eyebrow">CURRENT WEBSITE</p><h2 id="cookie-title">Cookie cleaner</h2></div></div>
+      <p class="cookie-description">Finds and removes common advertising and analytics cookies from this website only.</p>
+      <button id="cookie-clean-button" class="cookie-button" type="button">Clean tracking cookies</button>
+      <p id="cookie-clean-status" class="cookie-status" role="status">Click to check this website for likely tracking cookies.</p>
+    </section>
+
     <!-- Website risk section: popup.js calculates the score and inserts the findings. -->
     <section class="risk-card" aria-live="polite" aria-labelledby="risk-title">
       <div class="section-heading">
@@ -150,6 +158,13 @@
           <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="6" width="10" height="8" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="m13 9 4-2v6l-4-2" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
         </span>
         <div class="feature-copy"><strong>Camera activity alerts</strong><p>Alerts when supported pages start a camera stream.</p></div>
+        <span class="feature-state">On</span>
+      </div>
+
+      <!-- One-click cleanup for a limited list of common analytics and advertising cookies. -->
+      <div class="feature-row">
+        <span class="feature-icon" aria-hidden="true">◌</span>
+        <div class="feature-copy"><strong>Cookie cleaner</strong><p>Removes selected analytics and advertising cookies.</p></div>
         <span class="feature-state">On</span>
       </div>
 

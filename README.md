@@ -68,6 +68,12 @@ The `manifest.json` file tells Chrome how to load PrivacyGuard. JSON does not su
 - `content_scripts`: Tells Chrome which scripts to load on matching webpages.
   - The first entry loads `content.js` after the page has loaded enough for the document to be available.
   - The second entry loads `camera-monitor.js` at the start of page loading in the page's MAIN JavaScript world. It also runs in all frames where Chrome allows it.
-- `permissions`: Requests the extension APIs it uses. `contentSettings` lets the background script change a site's camera permission; `activeTab` allows the popup to inspect the active tab after the user invokes the extension.
+- `permissions`: Requests the extension APIs it uses. `contentSettings` lets the background script change a site's camera permission; `activeTab` allows the popup to inspect the active tab after the user invokes the extension; `cookies` lets the popup find and remove a limited list of likely analytics/advertising cookies on the current site.
 - `background.service_worker`: Identifies `background.js` as the extension's service worker, which handles extension messages and browser-level actions.
 - `host_permissions`: Allows the extension's content scripts to be injected on matching website URLs. Chrome may still restrict special browser pages and other protected contexts.
+
+## Cookie cleaner
+
+The popup includes a user-triggered cookie cleaner for the current website. It checks for a limited list of cookie names commonly associated with analytics and advertising, then removes only matching cookies when the user clicks the button. It does not clear all cookies, and it skips partitioned cookies.
+
+Cookie names are only clues: a matching cookie is not guaranteed to be unnecessary, and some sites may use analytics cookies for features or preferences. The cleaner does not inspect cookie values or send cookie data anywhere. It is not an automatic background cleaner and does not promise to remove every tracking cookie.

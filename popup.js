@@ -140,6 +140,72 @@
     // Calculate and display the URL-based risk rating for the active tab.
     render(rateWebsite(tabs[0].url));
 
+    // Only offer cookie cleanup on regular HTTP or HTTPS websites.
+    const cookieButton = $("cookie-clean-button");
+    const cookieStatus = $("cookie-clean-status");
+    const pageUrl = new URL(tabs[0].url);
+    if (cookieButton && cookieStatus && ["http:", "https:"].includes(pageUrl.protocol)) {
+      cookieButton.addEventListener("click", () => {
+        // Prevent repeated clicks while Chrome is checking or removing cookies.
+        cookieButton.disabled = true;
+        cookieButton.textContent = "Checking cookies…";
+        cookieStatus.textContent = "Checking this website for common tracking cookies.";
+
+        // These names are commonly used by analytics and advertising tools.
+        // A matching name is only a clue; it does not prove a cookie is unnecessary.
+        const likelyTrackingCookie = name => [
+          /^_ga(?:_|$)/i, /^_gid$/i, /^_gat(?:_|$)/i, /^_gcl_au$/i,
+          /^_fbp$/i, /^_ttp$/i, /^ttcsid(?:_|$)/i, /^_clck$/i, /^_clsk$/i,
+          /^_hj(?:Session|FirstSeen|IncludedInSessionSample|AbsoluteSessionInProgress)/i,
+          /^hubspotutk$/i, /^__hstc$/i, /^_uet(?:_|$)/i, /^amplitude_id_/i, /^mp_.+_mixpanel$/i
+        ].some(pattern => pattern.test(name));
+
+        // Ask Chrome for cookies that apply to the current website only.
+        chrome.cookies.getAll({ url: tabs[0].url }, cookies => {
+          if (chrome.runtime.lastError || !cookies) {
+            cookieStatus.textContent = "Could not read cookies. Check the extension permissions in Chrome.";
+            cookieButton.disabled = false;
+            cookieButton.textContent = "Try again";
+            return;
+          }
+
+          // Skip partitioned cookies because removing them requires extra partition information.
+          const candidates = cookies.filter(cookie => likelyTrackingCookie(cookie.name) && !cookie.partitionKey);
+          if (!candidates.length) {
+            cookieStatus.textContent = "No cookies from the tracking-cookie list were found on this website.";
+            cookieButton.disabled = false;
+            cookieButton.textContent = "Check again";
+            return;
+          }
+
+          cookieButton.textContent = "Removing…";
+          let finished = 0;
+          let removed = 0;
+
+          // Remove only matched cookies; unrelated login/session cookies are left alone.
+          candidates.forEach(cookie => {
+            const scheme = cookie.secure ? "https:" : pageUrl.protocol;
+            const cookieDomain = cookie.domain.replace(/^\./, "");
+            const cookieUrl = scheme + "//" + cookieDomain + (cookie.path || "/");
+            chrome.cookies.remove({ url: cookieUrl, name: cookie.name, storeId: cookie.storeId }, result => {
+              if (result) removed += 1;
+              finished += 1;
+
+              // Report the result after every removal request has completed.
+              if (finished === candidates.length) {
+                cookieStatus.textContent = "Removed " + removed + " of " + candidates.length + " likely tracking cookies from this website.";
+                cookieButton.disabled = false;
+                cookieButton.textContent = "Clean again";
+              }
+            });
+          });
+        });
+      });
+    } else if (cookieButton && cookieStatus) {
+      cookieButton.disabled = true;
+      cookieStatus.textContent = "Cookie cleanup is available on regular HTTP and HTTPS websites.";
+    }
+
     // Helper for updating one of the dashboard's status labels.
     // The optional tone selects a CSS class for the status color.
     const setStatus = (id, value, tone = "") => {
