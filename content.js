@@ -1,7 +1,8 @@
 (() => {
-  // PrivacyGuard v0.1: all scanning happens locally in this browser tab.
+  // PrivacyGuard: scanning happens locally in this browser tab.
   // Password fields are deliberately excluded.
   const approvedForms = new WeakSet();
+  const approvedSendButtons = new WeakSet();
   const patterns = [
     { type: "Email address", regex: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi },
     { type: "US phone number", regex: /(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}\b/g },
@@ -49,7 +50,7 @@
     return findings;
   }
 
-  function showWarning(form, findings, submitter) {
+  function showWarning(findings, onContinue) {
     const existing = document.getElementById("privacyguard-dialog");
     if (existing) existing.remove();
 
@@ -69,13 +70,12 @@
     title.style.cssText = "font-size:19px;margin:0 0 8px;color:#172033;";
 
     const intro = document.createElement("p");
-    intro.textContent = "This form appears to contain information you may not want to share:";
+    intro.textContent = "Your message appears to contain information you may not want to share:";
     intro.style.cssText = "margin:0 0 14px;color:#526071;";
 
     const list = document.createElement("ul");
     list.style.cssText = "margin:0 0 18px;padding-left:20px;color:#172033;";
-    const uniqueTypes = [...new Set(findings.map((item) => item.type))];
-    uniqueTypes.forEach((type) => {
+    [...new Set(findings.map((item) => item.type))].forEach((type) => {
       const li = document.createElement("li");
       li.textContent = type;
       list.appendChild(li);
@@ -91,15 +91,13 @@
     cancel.textContent = "Go back";
     cancel.style.cssText = "border:1px solid #cbd5e1;background:#fff;color:#172033;border-radius:9px;padding:10px 14px;cursor:pointer;font-weight:600;";
     const proceed = document.createElement("button");
-    proceed.textContent = "Submit anyway";
+    proceed.textContent = "Send anyway";
     proceed.style.cssText = "border:0;background:#b42318;color:#fff;border-radius:9px;padding:10px 14px;cursor:pointer;font-weight:600;";
 
     cancel.addEventListener("click", () => overlay.remove());
     proceed.addEventListener("click", () => {
       overlay.remove();
-      approvedForms.add(form);
-      if (typeof form.requestSubmit === "function") form.requestSubmit(submitter || undefined);
-      else form.submit();
+      onContinue();
     });
     overlay.addEventListener("click", (event) => {
       if (event.target === overlay) overlay.remove();
@@ -111,6 +109,7 @@
     cancel.focus();
   }
 
+  // Existing protection for ordinary HTML forms on other websites.
   document.addEventListener("submit", (event) => {
     const form = event.target;
     if (!(form instanceof HTMLFormElement)) return;
@@ -122,6 +121,97 @@
     if (findings.length === 0) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    showWarning(form, findings, event.submitter);
+    showWarning(findings, () => {
+      approvedForms.add(form);
+      if (typeof form.requestSubmit === "function") form.requestSubmit(event.submitter || undefined);
+      else form.submit();
+    });
   }, true);
+
+  // Gmail uses a custom compose editor and Send button, not a standard form.
+  if (location.hostname === "mail.google.com") {
+    function isVisible(element) {
+      return !!(element && (element.offsetWidth || element.offsetHeight || element.getClientRects().length));
+    }
+
+    function getComposeRoot(element) {
+      return element?.closest('[role="dialog"]') || element?.closest('[data-message-id]') || element?.parentElement;
+    }
+
+    function getEditorText(root) {
+      if (!root) return "";
+      const parts = [];
+      root.querySelectorAll('[contenteditable="true"], textarea, input[name="subjectbox"]').forEach((field) => {
+        if (field.matches("input, textarea")) parts.push(field.value || "");
+        else parts.push(field.innerText || field.textContent || "");
+      });
+      return parts.join("\n");
+    }
+
+    function getSendButton(root) {
+      const scope = root || document;
+      const buttons = [...scope.querySelectorAll('button, [role="button"]')];
+      return buttons.find((button) => {
+        if (!isVisible(button)) return false;
+        const label = [
+          button.getAttribute("aria-label"),
+          button.getAttribute("data-tooltip"),
+          button.getAttribute("title")
+        ].filter(Boolean).join(" ");
+        return /^send(?:\b|[\s(])/i.test(label.trim());
+      }) || null;
+    }
+
+    function checkGmailSend(button, root) {
+      if (!button || approvedSendButtons.has(button)) {
+        if (button) approvedSendButtons.delete(button);
+        return false;
+      }
+      const text = getEditorText(root);
+      const findings = detect(text);
+      if (!findings.length) return false;
+
+      showWarning(findings, () => {
+        approvedSendButtons.add(button);
+        button.click();
+      });
+      return true;
+    }
+
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest('button, [role="button"]');
+      if (!button) return;
+      const label = [
+        button.getAttribute("aria-label"),
+        button.getAttribute("data-tooltip"),
+        button.getAttribute("title")
+      ].filter(Boolean).join(" ");
+      if (!/^send(?:\b|[\s(])/i.test(label.trim())) return;
+
+      const root = getComposeRoot(button);
+      if (checkGmailSend(button, root)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    }, true);
+
+    document.addEventListener("keydown", (event) => {
+      if (!(event.metaKey || event.ctrlKey) || event.key !== "Enter") return;
+      const editor = event.target.closest?.('[contenteditable="true"], textarea, input[name="subjectbox"]');
+      if (!editor) return;
+      const root = getComposeRoot(editor);
+      const text = getEditorText(root);
+      const findings = detect(text);
+      if (!findings.length) return;
+
+      const button = getSendButton(root);
+      if (!button) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      showWarning(findings, () => {
+        approvedSendButtons.add(button);
+        button.click();
+      });
+    }, true);
+  }
 })();
