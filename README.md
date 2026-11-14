@@ -1,17 +1,17 @@
-# PrivacyGuard 🛡️
+# PrivacyGuard - Nishil Mehta, OCSEF Hacks
 
-A free Chrome extension prototype that helps people spot privacy risks before they share information or interact with websites.
+A Chrome extension that helps people spot privacy risks before they share information or interact with websites. Made for OCSEF Hacks Hackathon.
 
 ## Features
 
 ### Website risk rating
 
-- Shows a 0–100 indicator for the current tab when the extension popup is opened.
-- Checks URL-only warning signs locally, including missing HTTPS, embedded credentials, punycode domains, raw IP addresses, unusually long domains, and suspicious account/payment wording in the hostname.
-- Explains which signals affected the rating.
+- Shows a 0–100 indicator on the site safety for the current tab when the extension popup is opened. Notifies the user if its <50.
+- Checks URL-only warning signs locally, including missing HTTPS, embedded credentials, punycode domains, raw IP addresses, unusually long domains, and suspicious account/payment wording in the hostname. User is notified instantly upon entrance to site.
+- Explains which signals affected the rating, and possible signs of scams, malware, and dangerous bots.
 - Does not send browsing history or page URLs to a server.
 
-The score is a simple heuristic, not a threat-intelligence reputation lookup. It does not verify site ownership, inspect a site's full behavior, or guarantee that a website is safe. A site with a high score may still be malicious, and a legitimate site may receive a warning.
+The score is a simple estimation, not a instant determinant of a site's genuine safety. It does not verify site ownership, inspect a site's full behavior, or guarantee that a website is safe. A site with a high score may still be malicious, and a legitimate site may receive a warning.
 
 ### Sensitive-information detection
 
@@ -48,28 +48,12 @@ PrivacyGuard includes best-effort support for Gmail's custom compose editor and 
 
 1. Download or clone this repository.
 2. Open `chrome://extensions` in Google Chrome.
-3. Turn on **Developer mode**.
+3. Turn on **Developer mode** at the top right of the page
 4. Select **Load unpacked**.
 5. Choose the unzipped project folder.
 6. Refresh any open Gmail tabs after reloading the extension.
-
-## Current limitations
-
-This is a hackathon prototype and a warning aid, not a complete security product.
-
-- Website ratings use a few URL heuristics only; they are not a verified reputation score, phishing database, malware scan, or safety guarantee.
-- Pattern matching can produce false positives and false negatives.
-- A Luhn-valid number is not proof that a number is an active payment card.
-- Gmail's DOM and event handling can change, and some send paths may bypass the extension.
-- Some websites use custom JavaScript submission flows that are not covered by ordinary form interception.
-- The extension does not automatically redact information.
-
-Always review what you are sharing. A clean scan does not prove that a website or message is safe.
 
 ## Development
 
 No build step or external dependencies are required.
 
-## License
-
-MIT — see `LICENSE`.
