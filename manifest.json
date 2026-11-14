@@ -1,41 +1,29 @@
 {
   "manifest_version": 3,
   "name": "PrivacyGuard",
-  "version": "0.1.0",
-  "description": "Detect potentially sensitive information before it is submitted through web forms.",
+  "version": "0.2.0",
+  "description": "Detect privacy risks and suspicious website signals before you share information.",
   "action": {
     "default_title": "PrivacyGuard",
     "default_popup": "popup.html"
   },
   "content_scripts": [
     {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "content.js"
-      ],
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
       "run_at": "document_idle"
     },
     {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "camera-monitor.js"
-      ],
+      "matches": ["<all_urls>"],
+      "js": ["camera-monitor.js"],
       "run_at": "document_start",
       "world": "MAIN",
       "all_frames": true
     }
   ],
-  "permissions": [
-    "contentSettings"
-  ],
+  "permissions": ["contentSettings", "activeTab"],
   "background": {
     "service_worker": "background.js"
   },
-  "host_permissions": [
-    "<all_urls>"
-  ]
+  "host_permissions": ["<all_urls>"]
 }
