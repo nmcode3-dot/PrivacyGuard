@@ -61,3 +61,8 @@ No build step or external dependencies are required for this prototype.
 ## License
 
 MIT — see `LICENSE`.
+
+
+## Local detection upgrade
+
+The extension is being updated to recognize additional sensitive-data patterns and improve best-effort Gmail compose protection without any paid API or external AI service.
