@@ -1,9 +1,9 @@
 // Listen for messages sent from other parts of the PrivacyGuard extension.
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
-  // Only continue if the message is asking PrivacyGuard to block camera access.
-  // Ignore any other messages.
-  if (message?.type !== "PRIVACYGUARD_BLOCK_CAMERA") return;
+  // Accept only the two camera permission actions supported by PrivacyGuard.
+  // Ignore unrelated extension messages.
+  if (!["PRIVACYGUARD_BLOCK_CAMERA", "PRIVACYGUARD_UNBLOCK_CAMERA"].includes(message?.type)) return;
 
   // Get the website address (origin) that the extension wants to block.
   const origin = message.origin;
@@ -19,11 +19,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return; // Stop running the function because the origin is invalid.
   }
 
-  // Use Chrome's content settings API to block camera access for this website.
+  // Choose the permission based on the action requested by the user.
+  // "allow" restores camera permission; "block" prevents the site from requesting it.
+  const setting = message.type === "PRIVACYGUARD_BLOCK_CAMERA" ? "block" : "allow";
+
+  // Use Chrome's content settings API to update camera access for this website.
   chrome.contentSettings.camera.set(
     {
       primaryPattern: origin + "/*", // Apply the rule to every page on this website.
-      setting: "block",               // Set the camera permission to blocked.
+      setting,                        // Set the permission to Block or Allow.
       scope: "regular"                // Apply the rule to the regular browser profile.
     },
     () => {
