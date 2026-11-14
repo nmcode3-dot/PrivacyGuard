@@ -78,5 +78,48 @@
       return;
     }
     render(rateWebsite(tabs[0].url));
+    const setStatus = (id, value, tone = "") => {
+      const el = $(id);
+      el.textContent = value;
+      el.className = "dashboard-value" + (tone ? " " + tone : "");
+    };
+    const permissionLabel = state => ({
+      granted: ["Allowed", "warn"],
+      denied: ["Blocked", "good"],
+      prompt: ["Ask first", ""],
+      unsupported: ["Not available", ""],
+      unknown: ["Unknown", ""]
+    }[state] || ["Unknown", ""]);
+    chrome.tabs.sendMessage(tabs[0].id, { type: "PRIVACYGUARD_GET_DASHBOARD" }, status => {
+      if (chrome.runtime.lastError || !status) {
+        setStatus("camera-activity", "Not available");
+        setStatus("camera-permission", "Not available");
+        setStatus("microphone-permission", "Not available");
+        setStatus("location-permission", "Not available");
+        $("dashboard-note").textContent = "This page does not support dashboard status checks. Try a regular website tab.";
+        return;
+      }
+      setStatus("camera-activity", status.cameraActive ? "In use" : "Not active", status.cameraActive ? "alert" : "good");
+      const cameraPermission = permissionLabel(status.cameraPermission);
+      const mic = permissionLabel(status.microphonePermission);
+      const location = permissionLabel(status.locationPermission);
+      setStatus("camera-permission", cameraPermission[0], cameraPermission[1]);
+      setStatus("microphone-permission", mic[0], mic[1]);
+      setStatus("location-permission", location[0], location[1]);
+      $("dashboard-note").textContent = status.cameraPermission === "unsupported"
+        ? "Chrome does not expose all permission details on this page. Camera activity detection is best-effort."
+        : "Permission status only. PrivacyGuard does not access your microphone or location data.";
+    });
   });
+  chrome.runtime.onMessage.addListener(message => {
+    if (message?.type !== "PRIVACYGUARD_CAMERA_STATUS") return;
+    setCameraActivity(message.active);
+  });
+
+  function setCameraActivity(active) {
+    const el = $("camera-activity");
+    if (!el) return;
+    el.textContent = active ? "In use" : "Not active";
+    el.className = "dashboard-value " + (active ? "alert" : "good");
+  }
 })();
