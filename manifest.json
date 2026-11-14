@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "PrivacyGuard",
+  "version": "0.1.0",
+  "description": "Detect potentially sensitive information before it is submitted through web forms.",
+  "action": {
+    "default_title": "PrivacyGuard",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
