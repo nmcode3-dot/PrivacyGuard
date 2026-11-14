@@ -1,8 +1,19 @@
 # PrivacyGuard 🛡️
 
-A free Chrome extension prototype that warns users about potentially sensitive information before they share text.
+A free Chrome extension prototype that helps people spot privacy risks before they share information or interact with websites.
 
-## What it detects
+## Features
+
+### Website risk rating
+
+- Shows a 0–100 indicator for the current tab when the extension popup is opened.
+- Checks URL-only warning signs locally, including missing HTTPS, embedded credentials, punycode domains, raw IP addresses, unusually long domains, and suspicious account/payment wording in the hostname.
+- Explains which signals affected the rating.
+- Does not send browsing history or page URLs to a server.
+
+The score is a simple heuristic, not a threat-intelligence reputation lookup. It does not verify site ownership, inspect a site's full behavior, or guarantee that a website is safe. A site with a high score may still be malicious, and a legitimate site may receive a warning.
+
+### Sensitive-information detection
 
 - Email addresses
 - Common US phone number formats
@@ -13,11 +24,11 @@ A free Chrome extension prototype that warns users about potentially sensitive i
 - Private cryptographic key headers
 - Possible bank account or routing numbers when introduced by a matching phrase
 
-## Gmail support
+### Gmail support
 
 PrivacyGuard includes best-effort support for Gmail's custom compose editor and Send button, including the Ctrl/Cmd+Enter shortcut. It reads the subject and message body when it can identify them. Gmail's interface changes over time, so this integration must be tested against current Gmail behavior and is not guaranteed to intercept every send path.
 
-## Camera protection
+### Camera protection
 
 - A page-world monitor observes calls to `navigator.mediaDevices.getUserMedia()` that request video and reports when a live video track starts or ends.
 - The extension displays an alert while a camera stream is active in that tab.
@@ -27,10 +38,10 @@ PrivacyGuard includes best-effort support for Gmail's custom compose editor and 
 
 ## Privacy
 
-- Detection runs locally in the browser.
+- Detection and website URL checks run locally in the browser.
 - No API key, account, paid service, external AI model, or backend is required.
-- Message text is not uploaded by PrivacyGuard.
-- Password input fields are deliberately excluded.
+- Message text and browsing URLs are not uploaded by PrivacyGuard.
+- Password input fields are deliberately excluded from sensitive-text scanning.
 - The extension does not store detected values.
 
 ## Install locally
@@ -46,14 +57,14 @@ PrivacyGuard includes best-effort support for Gmail's custom compose editor and 
 
 This is a hackathon prototype and a warning aid, not a complete security product.
 
+- Website ratings use a few URL heuristics only; they are not a verified reputation score, phishing database, malware scan, or safety guarantee.
 - Pattern matching can produce false positives and false negatives.
-- Contextual patterns recognize common wording and formats; they do not understand every meaning or privacy risk.
 - A Luhn-valid number is not proof that a number is an active payment card.
 - Gmail's DOM and event handling can change, and some send paths may bypass the extension.
 - Some websites use custom JavaScript submission flows that are not covered by ordinary form interception.
 - The extension does not automatically redact information.
 
-Always review what you are sharing. A clean scan does not prove that a message is safe.
+Always review what you are sharing. A clean scan does not prove that a website or message is safe.
 
 ## Development
 
