@@ -542,6 +542,41 @@
     // Close the warning when the user clicks Dismiss.
     dismiss.addEventListener("click", removeCameraNotice);
 
+    // Restore camera permission after the user has blocked it.
+    function unblockCamera() {
+      block.disabled = true;
+      block.textContent = "Allowing…";
+
+      try {
+        chrome.runtime.sendMessage(
+          {
+            type: "PRIVACYGUARD_UNBLOCK_CAMERA",
+            origin: location.origin
+          },
+          response => {
+            if (chrome.runtime.lastError || !response?.ok) {
+              block.disabled = false;
+              block.textContent = "Try allowing again";
+              detail.textContent = response?.error || chrome.runtime.lastError?.message || "Could not restore this site's camera permission.";
+              return;
+            }
+
+            // Restoring permission does not automatically restart the camera.
+            cameraBlockedNotice = false;
+            heading.textContent = "Camera permission restored";
+            heading.style.color = "#18794e";
+            detail.textContent = "Chrome camera permission is now Allow for this site. The website may ask to use your camera again; it will not restart automatically.";
+            block.remove();
+            dismiss.textContent = "Close";
+          }
+        );
+      } catch (_) {
+        block.disabled = false;
+        block.textContent = "Try allowing again";
+        detail.textContent = "Could not contact PrivacyGuard. Change this site's camera permission in Chrome site settings.";
+      }
+    }
+
     // Handle the user's request to block camera access.
     block.addEventListener("click", () => {
 
@@ -586,8 +621,10 @@
             // Explain that the active stream was stopped and Chrome's permission was changed.
             detail.textContent = "PrivacyGuard stopped the active camera stream and changed this website's Chrome camera permission to Block. You can change it later in Chrome site settings.";
 
-            // Remove the block button because the blocking action succeeded.
-            block.remove();
+            // Turn the same button into an option to restore camera permission.
+            block.textContent = "Allow camera again";
+            block.style.background = "#18794e";
+            block.addEventListener("click", unblockCamera);
 
             // Change Dismiss into a Close button.
             dismiss.textContent = "Close";
