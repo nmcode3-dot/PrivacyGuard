@@ -17,6 +17,14 @@ A free Chrome extension prototype that warns users about potentially sensitive i
 
 PrivacyGuard includes best-effort support for Gmail's custom compose editor and Send button, including the Ctrl/Cmd+Enter shortcut. It reads the subject and message body when it can identify them. Gmail's interface changes over time, so this integration must be tested against current Gmail behavior and is not guaranteed to intercept every send path.
 
+## Camera protection
+
+- A page-world monitor observes calls to `navigator.mediaDevices.getUserMedia()` that request video and reports when a live video track starts or ends.
+- The extension displays an alert while a camera stream is active in that tab.
+- The alert offers **Block camera on this site**. This sets Chrome's camera content setting for that website to Block and asks the page monitor to stop the active video tracks.
+- This does not take pictures, record video, or upload camera data.
+- Coverage is best-effort: a page may bypass the hook, and this does not detect camera use by native apps, other browsers, operating-system services, or every browser/worker context. Chrome's own camera indicator and site permission controls remain important.
+
 ## Privacy
 
 - Detection runs locally in the browser.
