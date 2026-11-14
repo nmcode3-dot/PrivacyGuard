@@ -1,5 +1,7 @@
+/* Apply border-box sizing so padding and borders are included in element widths. */
 * { box-sizing: border-box; }
 
+/* Shared colors used throughout the popup. Changing a variable here updates every place it is used. */
 :root {
   color-scheme: light;
   --ink: #202a35;
@@ -12,6 +14,7 @@
   --green-soft: #edf5f0;
 }
 
+/* Base layout and typography for the Chrome extension popup. */
 body {
   width: 368px;
   margin: 0;
@@ -22,8 +25,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Make the main app content fill the popup's available width. */
 .app { width: 100%; }
 
+/* Brand row: icon, name, description, and local label. */
 .brand {
   display: flex;
   align-items: center;
@@ -56,6 +61,7 @@ h1 { margin: 0; font-size: 16px; font-weight: 650; letter-spacing: -.25px; }
   letter-spacing: .7px;
 }
 
+/* Green status strip that tells the user the extension is enabled. */
 .overall-status {
   display: flex;
   align-items: center;
@@ -75,6 +81,7 @@ h1 { margin: 0; font-size: 16px; font-weight: 650; letter-spacing: -.25px; }
 .overall-status strong { display: block; color: #285b40; font-size: 12px; font-weight: 650; }
 .overall-status p { margin: 1px 0 0; color: #587463; font-size: 10px; }
 
+/* Shared white card styling for the risk rating and feature list. */
 .risk-card, .features {
   margin-top: 12px;
   border: 1px solid var(--line);
@@ -82,6 +89,8 @@ h1 { margin: 0; font-size: 16px; font-weight: 650; letter-spacing: -.25px; }
   background: var(--surface);
 }
 .risk-card { padding: 14px; }
+
+/* Align section titles and their status labels on one row. */
 .section-heading, .features-heading {
   display: flex;
   align-items: center;
@@ -96,6 +105,8 @@ h1 { margin: 0; font-size: 16px; font-weight: 650; letter-spacing: -.25px; }
   letter-spacing: .8px;
 }
 h2 { margin: 0; font-size: 13px; font-weight: 650; letter-spacing: -.1px; }
+
+/* Base appearance for the risk-level label. */
 .risk-label {
   display: inline-flex;
   align-items: center;
@@ -107,16 +118,23 @@ h2 { margin: 0; font-size: 13px; font-weight: 650; letter-spacing: -.1px; }
   font-weight: 650;
   white-space: nowrap;
 }
+
+/* Different label colors for the three rating levels and the unavailable state. */
 .risk-label.low { border-color: #d8e9de; background: #f0f6f2; color: #286747; }
 .risk-label.medium { border-color: #f0e3c6; background: #fbf6e9; color: #805b18; }
 .risk-label.high { border-color: #efd8d6; background: #fbf0ef; color: #963c36; }
 .risk-label.na { border-color: var(--line); background: #f4f6f8; color: #687583; }
 
+/* Large numerical score and the smaller '/ 100' text beside it. */
 .score-line { display: flex; align-items: baseline; gap: 4px; margin-top: 11px; }
 .score { font-size: 36px; line-height: 1; font-weight: 650; letter-spacing: -1.8px; font-variant-numeric: tabular-nums; }
 .score-total { color: var(--subtle); font-size: 11px; }
+
+/* Horizontal score meter. JavaScript changes the inner bar's width and color. */
 .meter { height: 5px; margin: 10px 0 8px; overflow: hidden; border-radius: 3px; background: #edf0f2; }
 .meter div { width: 0; height: 100%; border-radius: inherit; background: #39845e; transition: width .18s ease; }
+
+/* Website hostname and the list of reasons that affected the rating. */
 .site-name { margin: 0; overflow-wrap: anywhere; color: #465462; font-size: 11px; font-weight: 600; }
 .findings { margin-top: 11px; padding-top: 10px; border-top: 1px solid #edf0f2; }
 .findings-title { margin: 0 0 5px; color: #52606d; font-size: 10px; font-weight: 650; }
@@ -124,6 +142,7 @@ h2 { margin: 0; font-size: 13px; font-weight: 650; letter-spacing: -.1px; }
 .risk-reasons li { margin: 3px 0; padding-left: 1px; }
 .risk-disclaimer { margin: 9px 0 0; color: var(--subtle); font-size: 9px; line-height: 1.45; }
 
+/* Protection feature list and the individual rows inside it. */
 .features { padding: 12px 13px 2px; }
 .features-heading { margin-bottom: 4px; }
 .features-heading h2 { font-size: 12px; }
@@ -146,6 +165,7 @@ h2 { margin: 0; font-size: 13px; font-weight: 650; letter-spacing: -.1px; }
 .feature-copy p { margin: 1px 0 0; color: var(--muted); font-size: 9px; line-height: 1.35; }
 .feature-state { color: var(--green); font-size: 10px; font-weight: 650; }
 
+/* Small privacy reminder at the bottom of the popup. */
 .privacy-note {
   display: flex;
   align-items: flex-start;
@@ -166,10 +186,12 @@ h2 { margin: 0; font-size: 13px; font-weight: 650; letter-spacing: -.1px; }
 .privacy-note p { margin: 0; color: #75818d; font-size: 9px; line-height: 1.5; }
 .privacy-note strong { color: #56636f; font-weight: 650; }
 
+/* Remove the meter animation for users who prefer reduced motion in their system settings. */
 @media (prefers-reduced-motion: reduce) {
   .meter div { transition: none; }
 }
 
+/* Live privacy dashboard card and its heading. */
 .dashboard-card {
   margin-top: 12px;
   padding: 13px 14px 9px;
@@ -184,6 +206,8 @@ h2 { margin: 0; font-size: 13px; font-weight: 650; letter-spacing: -.1px; }
   margin-bottom: 7px;
 }
 .dashboard-heading .eyebrow { margin-bottom: 2px; }
+
+/* Small LIVE indicator in the dashboard heading. */
 .live-label {
   display: inline-flex;
   align-items: center;
@@ -199,6 +223,8 @@ h2 { margin: 0; font-size: 13px; font-weight: 650; letter-spacing: -.1px; }
   border-radius: 50%;
   background: #39845e;
 }
+
+/* Each dashboard row displays a symbol, permission name, and current value. */
 .dashboard-row {
   display: flex;
   align-items: center;
@@ -223,9 +249,13 @@ h2 { margin: 0; font-size: 13px; font-weight: 650; letter-spacing: -.1px; }
   font-weight: 650;
   text-align: right;
 }
+
+/* Status colors applied by JavaScript depending on the permission or activity result. */
 .dashboard-value.good { color: #287653; }
 .dashboard-value.warn { color: #a36a16; }
 .dashboard-value.alert { color: #a33b34; }
+
+/* Small explanatory note beneath the dashboard rows. */
 .dashboard-note {
   margin: 7px 0 1px;
   color: var(--subtle);
