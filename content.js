@@ -181,4 +181,76 @@
       showWarning(findings, () => { approvedSendButtons.add(button); button.click(); });
     }, true);
   }
+
+  // Camera activity alerts. The MAIN-world monitor reports only whether a
+  // video track is live; no image or audio data is accessed.
+  let cameraNotice = null;
+  let cameraBlockedNotice = false;
+
+  function removeCameraNotice() {
+    cameraNotice?.remove();
+    cameraNotice = null;
+  }
+
+  function showCameraNotice() {
+    if (cameraNotice || cameraBlockedNotice) return;
+    const notice = document.createElement("section");
+    notice.id = "privacyguard-camera-alert";
+    notice.setAttribute("role", "alert");
+    notice.style.cssText = "position:fixed;top:18px;right:18px;z-index:2147483646;width:min(360px,calc(100vw - 36px));box-sizing:border-box;background:#fff;border:1px solid #f0b4ad;border-left:5px solid #c62828;border-radius:12px;padding:16px;box-shadow:0 12px 36px rgba(0,0,0,.24);font:14px/1.45 Arial,sans-serif;color:#172033;";
+    const heading = document.createElement("strong");
+    heading.textContent = "PrivacyGuard: Camera is active";
+    heading.style.cssText = "display:block;font-size:16px;margin-bottom:6px;color:#a61b1b;";
+    const detail = document.createElement("p");
+    detail.textContent = "This website has started a camera stream in this tab. If you did not expect this, block camera access for this site.";
+    detail.style.cssText = "margin:0 0 12px;color:#475467;";
+    const actions = document.createElement("div");
+    actions.style.cssText = "display:flex;gap:8px;align-items:center;flex-wrap:wrap;";
+    const block = document.createElement("button");
+    block.textContent = "Block camera on this site";
+    block.style.cssText = "border:0;background:#b42318;color:#fff;border-radius:8px;padding:9px 11px;cursor:pointer;font-weight:600;";
+    const dismiss = document.createElement("button");
+    dismiss.textContent = "Dismiss";
+    dismiss.style.cssText = "border:1px solid #d0d5dd;background:#fff;color:#344054;border-radius:8px;padding:9px 11px;cursor:pointer;";
+    dismiss.addEventListener("click", removeCameraNotice);
+    block.addEventListener("click", () => {
+      block.disabled = true;
+      block.textContent = "Blocking…";
+      try {
+        chrome.runtime.sendMessage(
+          { type: "PRIVACYGUARD_BLOCK_CAMERA", origin: location.origin },
+          response => {
+            if (chrome.runtime.lastError || !response?.ok) {
+              block.disabled = false;
+              block.textContent = "Try blocking again";
+              detail.textContent = response?.error || chrome.runtime.lastError?.message || "Could not change this site's camera permission. Use the camera icon or site settings in Chrome.";
+              return;
+            }
+            window.postMessage({ privacyGuardCameraCommand: "STOP_ACTIVE_CAMERA" }, "*");
+            cameraBlockedNotice = true;
+            heading.textContent = "Camera blocked for this site";
+            heading.style.color = "#18794e";
+            detail.textContent = "PrivacyGuard stopped the active camera stream and changed this website's Chrome camera permission to Block. You can change it later in Chrome site settings.";
+            block.remove();
+            dismiss.textContent = "Close";
+          }
+        );
+      } catch (_) {
+        block.disabled = false;
+        block.textContent = "Try blocking again";
+        detail.textContent = "Could not contact PrivacyGuard. Open this site's camera permission in Chrome settings and set it to Block.";
+      }
+    });
+    actions.append(block, dismiss);
+    notice.append(heading, detail, actions);
+    document.documentElement.appendChild(notice);
+    cameraNotice = notice;
+  }
+
+  window.addEventListener("message", event => {
+    if (event.source !== window || event.data?.privacyGuardCamera !== true) return;
+    if (event.data.type === "CAMERA_ACTIVE") showCameraNotice();
+    if (event.data.type === "CAMERA_INACTIVE" && !cameraBlockedNotice) removeCameraNotice();
+  });
+
 })();
