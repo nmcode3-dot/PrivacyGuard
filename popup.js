@@ -188,7 +188,7 @@
     });
   });
 
-  // Listen for camera status updates sent from the content script through the background script.
+  // Listen for camera status messages sent by the content script to the extension.
   // This lets the popup update while it remains open.
   chrome.runtime.onMessage.addListener(message => {
     if (message?.type !== "PRIVACYGUARD_CAMERA_STATUS") return;
