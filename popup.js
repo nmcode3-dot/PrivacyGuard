@@ -15,74 +15,85 @@
     $("risk-meter").style.width = "0%";
   };
 
-  // Estimate website risk using only the address (URL).
-  // This is a simple heuristic, not a malware scan or a reputation lookup.
+  // Estimate risk from the address only. This is deliberately stricter,
+  // but it is not a malware scan or a live reputation lookup.
   function rateWebsite(rawUrl) {
     let url;
+    try { url = new URL(rawUrl); }
+    catch (_) { return { unavailable: "This page does not have a standard website address." }; }
 
-    // Convert the address string into a URL object.
-    // If it is not a valid URL, return a message instead of trying to score it.
-    try { url = new URL(rawUrl); } catch (_) { return { unavailable: "This page does not have a standard website address." }; }
-
-    // Only rate ordinary HTTP and HTTPS website pages.
-    // Browser pages such as chrome:// settings pages are not supported.
     if (!["http:", "https:"].includes(url.protocol)) {
       return { unavailable: "Website ratings are available for ordinary HTTP and HTTPS pages." };
     }
 
-    // Store the lowercase domain name, a list of reasons, and the total risk points.
     const host = url.hostname.toLowerCase();
+    const labels = host.split(".");
     const reasons = [];
-    let risk = 0;
-
-    // Add risk points and save the explanation whenever a warning sign is found.
+    // Start with risk points because a URL-only check cannot prove a site is trustworthy.
+    let risk = 15;
     const add = (points, reason) => { risk += points; reasons.push({ points, reason }); };
 
-    // HTTP does not encrypt the connection in the way HTTPS does.
-    if (url.protocol === "http:") add(30, "This connection does not use HTTPS encryption.");
+    if (url.protocol === "http:") add(35, "This connection does not use HTTPS encryption.");
+    if (url.username || url.password) add(35, "The address contains embedded username or password text.");
 
-    // A normal website URL should not contain a username or password.
-    if (url.username || url.password) add(25, "The address contains embedded username or password text.");
-
-    // Punycode is used to represent certain international characters in domain names.
-    // Some look-alike characters can make a domain resemble a different website.
-    if (host.startsWith("xn--") || host.split(".").some(part => part.startsWith("xn--"))) {
-      add(25, "The domain uses internationalized/punycode characters that can disguise look-alike names.");
+    if (labels.some(part => part.startsWith("xn--"))) {
+      add(30, "The domain uses punycode, which can disguise look-alike characters.");
     }
 
-    // Check whether the hostname looks like a raw IPv4 or bracketed IPv6 address.
     const isIPv4 = /^(?:\d{1,3}\.){3}\d{1,3}$/.test(host);
     const isIPv6 = host.startsWith("[") && host.endsWith("]");
-    if (isIPv4 || isIPv6) add(20, "The website uses a raw IP address instead of a normal domain name.");
+    if (isIPv4 || isIPv6) add(30, "The website uses a raw IP address instead of a normal domain name.");
 
-    // A large number of subdomains can be unusual, so add a small warning.
-    if (host.split(".").length >= 5) add(10, "The domain has an unusually large number of subdomains.");
+    if (labels.length >= 4) add(15, "The address uses several nested subdomains.");
+    if (host.length > 35) add(10, "The domain name is unusually long.");
+    if (host.length > 55) add(10, "The domain is especially long and difficult to inspect.");
+    if ((host.match(/-/g) || []).length >= 2) add(12, "The domain contains multiple hyphens, a pattern often used in imitation links.");
+    if (/\d/.test(host)) add(8, "The domain contains numbers, which can be used to imitate familiar names.");
 
-    // Very long domain names can be harder for people to inspect carefully.
-    if (host.length > 55) add(10, "The domain name is unusually long.");
+    const riskyTlds = ["zip", "mov", "top", "click", "country", "gq", "tk", "ml", "cf", "ga", "work", "buzz", "rest"];
+    const tld = labels[labels.length - 1];
+    if (riskyTlds.includes(tld)) add(25, "This website uses a top-level domain frequently seen in suspicious or disposable links.");
 
-    // Check for words often used in fake account, payment, or password pages.
-    // These words alone do not prove a site is malicious.
-    if (/(login|signin|verify|account|secure|update|payment|wallet|password|recover)/i.test(host)) {
-      add(12, "The domain includes words commonly used in account or payment lures; check the exact domain carefully.");
+    if (/(login|signin|verify|account|secure|update|payment|wallet|password|recover|support)/i.test(host)) {
+      add(18, "The domain includes account, payment, or support wording commonly used in phishing lures.");
     }
 
-    // Look for repeated percent-encoded characters in the path or query string.
+    if (/(login|signin|verify|password|wallet|payment|recover|security|account)/i.test(url.pathname)) {
+      add(10, "The page address contains account or payment wording often used in credential traps.");
+    }
+
     if (/(%[0-9a-f]{2}){4,}/i.test(url.pathname + url.search)) {
-      add(8, "The address contains unusually heavy URL encoding.");
+      add(12, "The address contains unusually heavy URL encoding.");
     }
 
-    // Two dots next to each other in a hostname are an unusual pattern.
-    if (url.hostname.includes("..")) add(10, "The domain contains an unusual sequence of dots.");
+    if (/(^|[?&])(redirect|url|next|return|continue|target)=/i.test(url.search)) {
+      add(10, "The address contains a redirect parameter that can hide the final destination.");
+    }
 
-    // Convert the accumulated risk points into a score from 0 to 100.
-    // More warning points produce a lower score.
+    if (url.hostname.includes("..")) add(20, "The domain contains an unusual sequence of dots.");
+
+    // Warn when a well-known brand name appears in a different domain.
+    const officialBrandDomains = {
+      google: "google.com", microsoft: "microsoft.com", apple: "apple.com",
+      amazon: "amazon.com", paypal: "paypal.com", facebook: "facebook.com",
+      instagram: "instagram.com", chase: "chase.com", netflix: "netflix.com"
+    };
+    for (const [brand, officialDomain] of Object.entries(officialBrandDomains)) {
+      if (host.includes(brand) && host !== officialDomain && !host.endsWith("." + officialDomain)) {
+        add(30, "The domain uses the name of " + brand + " without being its official domain.");
+        break;
+      }
+    }
+
+    // Known link-shortening services hide the destination until the link is opened.
+    const shorteners = ["bit.ly", "tinyurl.com", "t.co", "is.gd", "cutt.ly", "rb.gy"];
+    if (shorteners.some(domain => host === domain || host.endsWith("." + domain))) {
+      add(20, "This is a link-shortening domain, so the final destination is hidden.");
+    }
+
     const score = Math.max(0, Math.min(100, 100 - risk));
-
-    // Group the score into three broad labels.
-    const level = score >= 80 ? "low" : score >= 50 ? "medium" : "high";
-
-    // Return the score and the explanations for the popup to display.
+    // The stricter thresholds make the safer label harder to reach.
+    const level = score >= 70 ? "low" : score >= 40 ? "medium" : "high";
     return { score, level, host, reasons };
   }
 
@@ -123,6 +134,46 @@
     }
   }
 
+  // Combine the URL checks with findings from the actual page DOM.
+  function renderCombinedRating(urlResult, pageAudit) {
+    if (urlResult.unavailable) return render(urlResult);
+
+    const reasons = [...urlResult.reasons, ...pageAudit.findings];
+    const score = Math.max(0, Math.min(100, urlResult.score - pageAudit.riskPoints));
+    const level = score >= 70 ? "low" : score >= 40 ? "medium" : "high";
+    render({
+      score,
+      level,
+      host: urlResult.host,
+      reasons,
+      pageCounts: pageAudit.counts
+    });
+
+    const status = $("page-scan-status");
+    if (status) {
+      status.textContent = "Page checked: " + pageAudit.counts.links + " links, " +
+        pageAudit.counts.frames + " embedded frames, and " + pageAudit.counts.scripts +
+        " scripts. " + pageAudit.note;
+    }
+  }
+
+  function scanCurrentPage(tabId, urlResult) {
+    const status = $("page-scan-status");
+    const button = $("page-scan-button");
+    if (status) status.textContent = "Inspecting links, forms, downloads, ads, and embedded content…";
+    if (button) { button.disabled = true; button.textContent = "Scanning…"; }
+
+    chrome.tabs.sendMessage(tabId, { type: "PRIVACYGUARD_SCAN_PAGE_RISK" }, audit => {
+      if (button) { button.disabled = false; button.textContent = "Rescan page"; }
+      if (chrome.runtime.lastError || !audit) {
+        if (status) status.textContent = "Page inspection is unavailable on this tab. Refresh the website and try again.";
+        render(urlResult);
+        return;
+      }
+      renderCombinedRating(urlResult, audit);
+    });
+  }
+
   // Make sure Chrome's tabs API is available before trying to inspect the active tab.
   if (!globalThis.chrome?.tabs?.query) {
     setUnavailable("Could not read the active tab.");
@@ -137,8 +188,12 @@
       return;
     }
 
-    // Calculate and display the URL-based risk rating for the active tab.
-    render(rateWebsite(tabs[0].url));
+    // Rate the URL, then inspect the actual page before showing the final score.
+    const urlResult = rateWebsite(tabs[0].url);
+    render(urlResult);
+    const pageScanButton = $("page-scan-button");
+    if (pageScanButton) pageScanButton.addEventListener("click", () => scanCurrentPage(tabs[0].id, urlResult));
+    scanCurrentPage(tabs[0].id, urlResult);
 
     // Scan visible conversation text only after the user clicks the scam-check button.
     const scamButton = $("scam-check-button");

@@ -763,6 +763,179 @@
 
   // --------------------------------------------------
   // --------------------------------------------------
+  // PAGE CONTENT RISK SCANNER
+  // --------------------------------------------------
+
+  // Inspect the current page's visible structure and destination URLs.
+  // This never opens links, downloads files, executes page scripts, or uploads page data.
+  function scanPageRisk() {
+    const findings = [];
+    const seen = new Set();
+    let riskPoints = 0;
+    const add = (points, reason) => {
+      if (seen.has(reason)) return;
+      seen.add(reason);
+      riskPoints += points;
+      findings.push({ points, reason });
+    };
+
+    const currentHost = location.hostname.toLowerCase();
+    const riskyTlds = ["zip", "mov", "top", "click", "country", "gq", "tk", "ml", "cf", "ga", "work", "buzz", "rest"];
+    const shorteners = ["bit.ly", "tinyurl.com", "t.co", "is.gd", "cutt.ly", "rb.gy"];
+    const executableExtensions = /\.(?:exe|msi|bat|cmd|scr|ps1|vbs|js|jar|apk|dmg|pkg|hta|com)(?:$|[?#])/i;
+    const archiveExtensions = /\.(?:zip|rar|7z|iso)(?:$|[?#])/i;
+    const isExternal = host => host !== currentHost && !host.endsWith("." + currentHost);
+    const isIpAddress = host => /^(?:\d{1,3}\.){3}\d{1,3}$/.test(host) || (host.startsWith("[") && host.endsWith("]"));
+
+    // Review links, but do not follow them.
+    const links = [...document.querySelectorAll("a[href]")].slice(0, 500);
+    let externalLinks = 0;
+    let executableLinks = 0;
+    let archiveLinks = 0;
+    let shortenerLinks = 0;
+    let suspiciousLinkDomains = 0;
+    let deceptiveLinks = 0;
+
+    for (const link of links) {
+      const rawHref = link.getAttribute("href") || "";
+      if (/^(?:javascript|data|file):/i.test(rawHref.trim())) {
+        add(30, "The page contains a link using an unsafe or unusual URL scheme.");
+        continue;
+      }
+
+      let target;
+      try { target = new URL(rawHref, location.href); } catch (_) { continue; }
+      if (!["http:", "https:"].includes(target.protocol)) continue;
+      const host = target.hostname.toLowerCase();
+      const external = isExternal(host);
+      if (external) externalLinks++;
+
+      if (executableExtensions.test(target.href) || link.hasAttribute("download") && executableExtensions.test(target.pathname)) {
+        executableLinks++;
+      } else if (archiveExtensions.test(target.href) || link.hasAttribute("download") && archiveExtensions.test(target.pathname)) {
+        archiveLinks++;
+      }
+
+      if (shorteners.some(domain => host === domain || host.endsWith("." + domain))) shortenerLinks++;
+      if (target.protocol === "http:" && external) suspiciousLinkDomains++;
+      if (host.split(".").some(label => label.startsWith("xn--")) || isIpAddress(host) || riskyTlds.includes(host.split(".").pop())) {
+        suspiciousLinkDomains++;
+      }
+
+      // Flag links whose visible text claims to lead to one domain but actually points elsewhere.
+      const label = (link.innerText || link.getAttribute("aria-label") || "").trim();
+      const displayedDomain = label.match(/(?:https?:\/\/)?(?:[a-z0-9-]+\.)+[a-z]{2,}/i)?.[0];
+      if (displayedDomain) {
+        try {
+          const displayedHost = new URL(displayedDomain.includes("://") ? displayedDomain : "https://" + displayedDomain).hostname.toLowerCase();
+          if (displayedHost !== host && !host.endsWith("." + displayedHost) && !displayedHost.endsWith("." + host)) deceptiveLinks++;
+        } catch (_) {}
+      }
+    }
+
+    if (executableLinks) add(35, "The page links to executable or script files that could run code on your device (" + executableLinks + " found).");
+    if (archiveLinks) add(12, "The page links to downloadable archives that could contain unsafe files (" + archiveLinks + " found).");
+    if (shortenerLinks) add(18, "The page contains shortened links that hide their final destinations (" + shortenerLinks + " found).");
+    if (suspiciousLinkDomains) add(22, "Some links lead to insecure, unusually named, or suspicious-looking domains.");
+    if (deceptiveLinks) add(30, "Some links display a different website address from the destination they actually open.");
+    if (externalLinks >= 20) add(12, "The page contains an unusually large number of links to other websites (" + externalLinks + " external links).");
+    else if (externalLinks >= 10) add(6, "The page contains many links to other websites (" + externalLinks + " external links).");
+
+    // Inspect forms for password or payment details being sent to another domain.
+    let externalForms = 0;
+    let passwordForms = 0;
+    for (const form of [...document.forms].slice(0, 100)) {
+      const method = (form.method || "get").toLowerCase();
+      let action;
+      try { action = new URL(form.getAttribute("action") || location.href, location.href); } catch (_) { continue; }
+      if (isExternal(action.hostname.toLowerCase())) {
+        externalForms++;
+        if (form.querySelector('input[type="password"]')) passwordForms++;
+        else if (method === "post") add(12, "A form sends information to a different website.");
+      }
+    }
+    if (passwordForms) add(40, "A password form sends login details to a different website.");
+    if (externalForms >= 3) add(10, "Several forms send information to other websites.");
+
+    // Embedded frames can contain third-party content and ads. Their presence alone
+    // is not proof of danger, so only stronger patterns receive substantial penalties.
+    const frames = [...document.querySelectorAll("iframe")].slice(0, 100);
+    let externalFrames = 0;
+    let adFrames = 0;
+    let hiddenExternalFrames = 0;
+    for (const frame of frames) {
+      let frameUrl;
+      try { frameUrl = new URL(frame.getAttribute("src") || "", location.href); } catch (_) { continue; }
+      if (!["http:", "https:"].includes(frameUrl.protocol) || !isExternal(frameUrl.hostname.toLowerCase())) continue;
+      externalFrames++;
+      if (/(doubleclick|googlesyndication|adservice|adnxs|taboola|outbrain|popads|propellerads)/i.test(frameUrl.hostname + frameUrl.pathname)) adFrames++;
+      const rect = frame.getBoundingClientRect();
+      if (frame.hidden || frame.getAttribute("aria-hidden") === "true" || (rect.width < 2 && rect.height < 2)) hiddenExternalFrames++;
+    }
+    if (hiddenExternalFrames) add(18, "The page contains hidden external frames that may load content without being visible.");
+    if (externalFrames >= 8) add(10, "The page loads content from many other websites inside embedded frames.");
+    if (adFrames >= 3) add(8, "The page contains several third-party advertising frames. Ads can lead to risky destinations.");
+
+    // Review external scripts as a signal, not as proof that the scripts are malicious.
+    const scripts = [...document.querySelectorAll("script[src]")].slice(0, 150);
+    const scriptHosts = new Set();
+    let suspiciousScriptHosts = 0;
+    for (const script of scripts) {
+      try {
+        const scriptUrl = new URL(script.src, location.href);
+        if (!isExternal(scriptUrl.hostname.toLowerCase())) continue;
+        scriptHosts.add(scriptUrl.hostname.toLowerCase());
+        if (scriptUrl.hostname.split(".").some(label => label.startsWith("xn--")) || riskyTlds.includes(scriptUrl.hostname.split(".").pop()) || isIpAddress(scriptUrl.hostname)) suspiciousScriptHosts++;
+      } catch (_) {}
+    }
+    if (scriptHosts.size >= 12) add(12, "The page loads scripts from many different outside domains (" + scriptHosts.size + " script providers).");
+    else if (scriptHosts.size >= 6) add(6, "The page loads scripts from several outside domains (" + scriptHosts.size + " script providers).");
+    if (suspiciousScriptHosts) add(25, "At least one external script is hosted on an unusually named or suspicious-looking domain.");
+
+    // Look for common scareware and deceptive-ad messages in visible text.
+    const visibleText = (document.body?.innerText || "").slice(0, 50000);
+    const deceptiveAdPatterns = [
+      /your (?:device|computer|phone) (?:is )?infected/i,
+      /virus (?:has been )?detected/i,
+      /your device is at risk/i,
+      /claim your (?:free )?(?:prize|reward)/i,
+      /allow notifications to continue/i,
+      /download (?:this|now) to (?:continue|protect)/i,
+      /call (?:our|the) support/i,
+      /you have won (?:a|the)/i
+    ];
+    if (deceptiveAdPatterns.some(pattern => pattern.test(visibleText))) {
+      add(28, "The page displays scareware or deceptive-ad wording often used to pressure visitors.");
+    }
+
+    // Meta refreshes can unexpectedly send visitors to another address.
+    const refresh = document.querySelector('meta[http-equiv="refresh" i]');
+    if (refresh && /url\s*=\s*https?:/i.test(refresh.content || "")) {
+      add(22, "The page contains an automatic redirect to another website.");
+    }
+
+    return {
+      findings,
+      riskPoints: Math.min(riskPoints, 100),
+      counts: {
+        links: links.length,
+        externalLinks,
+        frames: frames.length,
+        scripts: scripts.length,
+        externalScriptHosts: scriptHosts.size,
+        forms: document.forms.length
+      },
+      note: "PrivacyGuard inspected page structure and visible warning signs locally. Third-party ads, scripts, and downloads are not automatically malicious."
+    };
+  }
+
+  // The popup requests this scan when it opens and whenever the user chooses to rescan.
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message?.type !== "PRIVACYGUARD_SCAN_PAGE_RISK") return;
+    sendResponse(scanPageRisk());
+  });
+
+  // --------------------------------------------------
   // SCAM CONVERSATION CHECKER
   // --------------------------------------------------
 
