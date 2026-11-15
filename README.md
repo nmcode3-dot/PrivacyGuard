@@ -26,9 +26,11 @@ The score is a simple estimation, not a instant determinant of a site's genuine 
 
 ### Scam conversation checker
 
-- A user-triggered scan checks up to 30,000 characters of visible page text against 500 phrase combinations in each of eight warning categories (4,000 combinations total): password requests, verification-code requests, urgent threats, suspicious payment methods, impersonation, unexpected prizes/refunds, requests to move to private channels, and suspicious account-verification links.
+- A user-triggered scan checks up to 30,000 characters of visible page text against **4,000 ranked, single-word entries** across eight scam-related categories.
+- Words are matched individually (whole-word matching), not as long phrases. Results are ranked from **Clear sign** and **Strong sign** down to **Moderate**, **Small**, and **Weak sign**.
+- The original 4,000 phrase combinations reuse many of the same words; converting them produces 160 distinct buzzwords across the 4,000 ranked entries. Repeated entries are retained so the original 4,000-entry total is preserved.
 - The scan runs locally in the browser. It does not send or store conversation text.
-- Results are clues, not proof that a person is a scammer. Scammers may use different wording, and legitimate messages can contain similar phrases. Verify identity through an official channel before sharing money or sensitive information.
+- A word is only a clue, not proof that a message is a scam. Common words can appear in harmless conversations, and scammers may use words that are not in the list. Review the surrounding message and verify identity through an official channel before sharing money or sensitive information.
 
 ### Gmail support
 
