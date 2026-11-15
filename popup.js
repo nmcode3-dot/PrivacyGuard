@@ -139,7 +139,11 @@
     ];
 
     for (const entry of officialBrandDomains) {
-      const brandAppears = entry.names.some(name => host.includes(name));
+      // Match a brand as a hostname word (separated by dots, hyphens, or
+      // other non-letter characters), rather than inside unrelated words.
+      const brandAppears = entry.names.some(name =>
+        new RegExp("(^|[^a-z])" + name + "([^a-z]|$)").test(host)
+      );
       if (!brandAppears) continue;
 
       const isOfficialDomain = entry.domains.some(domain =>
