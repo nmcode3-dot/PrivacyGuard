@@ -770,14 +770,14 @@
   function checkScamConversation() {
     const pageText = (document.body?.innerText || "").slice(0, 30000);
     const rules = [
-      { type: "Request for passwords or login details", regex: /\\b(?:send|share|tell|confirm|verify|provide)\\b.{0,45}\\b(?:password|passphrase|login details|bank login|pin)\\b|\\b(?:password|login details)\\b.{0,35}\\b(?:needed|required|confirm|verify)\\b/i },
-      { type: "Request for a one-time or verification code", regex: /\\b(?:verification|one[- ]time|2fa|security|login) code\\b|\\b(?:send|share|read|tell)\\b.{0,35}\\b(?:otp|code)\\b/i },
-      { type: "Urgent pressure or threats", regex: /\\b(?:act now|immediately|urgent|within 24 hours|account will be (?:closed|suspended)|final warning|legal action|arrest warrant)\\b/i },
-      { type: "Suspicious payment method", regex: /\\b(?:gift cards?|itunes cards?|google play cards?|crypto(?:currency)?|bitcoin|wire transfer|western union|moneygram)\\b/i },
-      { type: "Impersonation or fake support language", regex: /\\b(?:from|calling on behalf of|representing)\\b.{0,35}\\b(?:your bank|the irs|social security|tech support|microsoft support|apple support|amazon support|police)\\b/i },
-      { type: "Prize, refund, or unexpected money offer", regex: /\\b(?:you (?:have )?won|claim your prize|unexpected refund|release your funds|inheritance waiting|guaranteed returns)\\b/i },
-      { type: "Request to move to a private channel", regex: /\\b(?:move|continue|talk)\\b.{0,25}\\b(?:whatsapp|telegram|signal|private chat)\\b/i },
-      { type: "Suspicious link or account verification request", regex: /\\b(?:click|open|visit)\\b.{0,35}\\b(?:link|url)\\b.{0,40}\\b(?:verify|unlock|restore|confirm)\\b/i }
+      { type: "Request for passwords or login details", regex: /\b(?:send|share|tell|confirm|verify|provide)\b.{0,45}\b(?:password|passphrase|login details|bank login|pin)\b|\b(?:password|login details)\b.{0,35}\b(?:needed|required|confirm|verify)\b/i },
+      { type: "Request for a one-time or verification code", regex: /\b(?:verification|one[- ]time|2fa|security|login) code\b|\b(?:send|share|read|tell)\b.{0,35}\b(?:otp|code)\b/i },
+      { type: "Urgent pressure or threats", regex: /\b(?:act now|immediately|urgent|within 24 hours|account will be (?:closed|suspended)|final warning|legal action|arrest warrant)\b/i },
+      { type: "Suspicious payment method", regex: /\b(?:gift cards?|itunes cards?|google play cards?|crypto(?:currency)?|bitcoin|wire transfer|western union|moneygram)\b/i },
+      { type: "Impersonation or fake support language", regex: /\b(?:from|calling on behalf of|representing)\b.{0,35}\b(?:your bank|the irs|social security|tech support|microsoft support|apple support|amazon support|police)\b/i },
+      { type: "Prize, refund, or unexpected money offer", regex: /\b(?:you (?:have )?won|claim your prize|unexpected refund|release your funds|inheritance waiting|guaranteed returns)\b/i },
+      { type: "Request to move to a private channel", regex: /\b(?:move|continue|talk)\b.{0,25}\b(?:whatsapp|telegram|signal|private chat)\b/i },
+      { type: "Suspicious link or account verification request", regex: /\b(?:click|open|visit)\b.{0,35}\b(?:link|url)\b.{0,40}\b(?:verify|unlock|restore|confirm)\b/i }
     ];
 
     const findings = rules.filter(rule => rule.regex.test(pageText)).map(rule => rule.type);
