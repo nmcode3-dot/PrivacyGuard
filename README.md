@@ -12,7 +12,9 @@ A Chrome extension that helps people spot privacy risks before they share inform
 
 ![Turn devloper mode on, turn load unpacked](screenshots/load-unpacked.png)
 
+### Choose the Privacy Guard UNZIPPED Foler
 
+![Privacy Guard Unzipped Folder](screenshots/choose-privacyguard.png)
 ## Features
 
 ### Website risk rating
