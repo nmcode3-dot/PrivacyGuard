@@ -26,7 +26,7 @@ The score is a simple estimation, not a instant determinant of a site's genuine 
 
 ### Scam conversation checker
 
-- A user-triggered scan checks up to 30,000 characters of visible page text for common scam signals, such as requests for passwords or one-time codes, urgent threats, suspicious payment methods, impersonation language, and unexpected prize/refund offers.
+- A user-triggered scan checks up to 30,000 characters of visible page text against 500 phrase combinations in each of eight warning categories (4,000 combinations total): password requests, verification-code requests, urgent threats, suspicious payment methods, impersonation, unexpected prizes/refunds, requests to move to private channels, and suspicious account-verification links.
 - The scan runs locally in the browser. It does not send or store conversation text.
 - Results are clues, not proof that a person is a scammer. Scammers may use different wording, and legitimate messages can contain similar phrases. Verify identity through an official channel before sharing money or sensitive information.
 
