@@ -83,3 +83,10 @@ The `manifest.json` file tells Chrome how to load PrivacyGuard. JSON does not su
 The popup includes a user-triggered cookie cleaner for the current website. It checks for a limited list of cookie names commonly associated with analytics and advertising, then removes only matching cookies when the user clicks the button. It does not clear all cookies, and it skips partitioned cookies.
 
 Cookie names are only clues: a matching cookie is not guaranteed to be unnecessary, and some sites may use analytics cookies for features or preferences. The cleaner does not inspect cookie values or send cookie data anywhere. It is not an automatic background cleaner and does not promise to remove every tracking cookie.
+
+
+### Page content risk analysis
+- The website rating now combines URL checks with a local inspection of the current page's links, forms, downloads, embedded frames, external scripts, automatic redirects, and visible scareware/deceptive-ad wording.
+- It flags executable downloads, suspicious or shortened links, mismatched link labels and destinations, cross-site password forms, hidden external frames, and unusual third-party resource patterns.
+- Page inspection runs when the popup opens and can be repeated with **Rescan page**. It does not open links, download files, execute scripts, or upload page content.
+- Third-party ads, scripts, and downloads are not automatically malicious. This is a heuristic warning system, not antivirus software or a reputation service; it can miss threats and produce false positives.
