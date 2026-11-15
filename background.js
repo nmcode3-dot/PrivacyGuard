@@ -1,52 +1,100 @@
-// Listen for messages sent from other parts of the PrivacyGuard extension.
+// Keep track of tabs that currently have an active camera stream.
+const activeCameraTabs = new Map();
+
+// Handle camera alerts and the user's camera block/unblock requests.
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // A content script reports camera activity from the page that requested the camera.
+  if (message?.type === "PRIVACYGUARD_CAMERA_STATUS") {
+    const tabId = sender.tab?.id;
+    const pageUrl = sender.tab?.url;
 
-  // Accept only the two camera permission actions supported by PrivacyGuard.
-  // Ignore unrelated extension messages.
-  if (!["PRIVACYGUARD_BLOCK_CAMERA", "PRIVACYGUARD_UNBLOCK_CAMERA"].includes(message?.type)) return;
+    // Ignore messages that did not come from a normal website tab.
+    if (typeof tabId !== "number" || !pageUrl || !/^https?:\/\//i.test(pageUrl)) return;
 
-  // Get the website address (origin) that the extension wants to block.
-  const origin = message.origin;
+    let site = "this website";
+    try { site = new URL(pageUrl).hostname; } catch (_) {}
 
-  // Check that an origin was provided and that it starts with HTTP or HTTPS.
-  // This prevents the extension from trying to block an invalid or unsupported address.
-  if (!origin || !/^https?:\/\//i.test(origin)) {
-    // Tell the part of the extension that sent the message that the request failed.
-    sendResponse({
-      ok: false,
-      error: "This page does not have a supported website origin."
-    });
-    return; // Stop running the function because the origin is invalid.
+    const notificationId = "privacyguard-camera-" + tabId;
+
+    if (message.active) {
+      // Save the site so PrivacyGuard can identify it even from another tab.
+      activeCameraTabs.set(tabId, { site, pageUrl });
+
+      // A system notification appears above other websites and browser tabs.
+      chrome.notifications.create(notificationId, {
+        type: "basic",
+        iconUrl: chrome.runtime.getURL("notification-icon.svg"),
+        title: "Camera active on " + site,
+        message: "PrivacyGuard detected a camera stream from this website.",
+        priority: 2
+      });
+    } else {
+      activeCameraTabs.delete(tabId);
+      chrome.notifications.clear(notificationId);
+    }
+
+    // Save active camera information for when Chrome suspends and restarts this worker.
+    chrome.storage.session.set({ activeCameraTabs: [...activeCameraTabs.entries()] });
+    return;
   }
 
-  // Choose the permission based on the action requested by the user.
-  // "allow" restores camera permission; "block" prevents the site from requesting it.
+  // If the service worker restarts, restore the active camera list from session storage.
+  if (message?.type === "PRIVACYGUARD_GET_ACTIVE_CAMERAS") {
+    chrome.storage.session.get("activeCameraTabs", data => {
+      sendResponse({ cameras: data.activeCameraTabs || [] });
+    });
+    return true;
+  }
+
+  // The remaining supported messages change a site's camera permission.
+  if (!["PRIVACYGUARD_BLOCK_CAMERA", "PRIVACYGUARD_UNBLOCK_CAMERA"].includes(message?.type)) return;
+
+  const origin = message.origin;
+
+  // Only accept valid HTTP or HTTPS website origins.
+  if (!origin || !/^https?:\/\//i.test(origin)) {
+    sendResponse({ ok: false, error: "This page does not have a supported website origin." });
+    return;
+  }
+
+  // Choose whether Chrome should block or allow camera access for this site.
   const setting = message.type === "PRIVACYGUARD_BLOCK_CAMERA" ? "block" : "allow";
 
-  // Use Chrome's content settings API to update camera access for this website.
-  chrome.contentSettings.camera.set(
-    {
-      primaryPattern: origin + "/*", // Apply the rule to every page on this website.
-      setting,                        // Set the permission to Block or Allow.
-      scope: "regular"                // Apply the rule to the regular browser profile.
-    },
-    () => {
-      // Check whether Chrome reported an error while applying the permission change.
-      if (chrome.runtime.lastError) {
-        // Send the error message back to the part of the extension that requested the change.
-        sendResponse({
-          ok: false,
-          error: chrome.runtime.lastError.message
-        });
-        return; // Stop here because the camera could not be blocked.
-      }
-
-      // Tell the requesting part of the extension that the camera was successfully blocked.
-      sendResponse({ ok: true });
+  chrome.contentSettings.camera.set({
+    primaryPattern: origin + "/*",
+    setting,
+    scope: "regular"
+  }, () => {
+    if (chrome.runtime.lastError) {
+      sendResponse({ ok: false, error: chrome.runtime.lastError.message });
+      return;
     }
-  );
+    sendResponse({ ok: true });
+  });
 
-  // Keep the message channel open because Chrome's permission-setting operation is asynchronous.
-  // This allows sendResponse() to send its result after the operation finishes.
+  // Keep the message channel open until Chrome finishes changing the permission.
   return true;
+});
+
+// Remove a tab's camera status when that tab is closed.
+chrome.tabs.onRemoved.addListener(tabId => {
+  activeCameraTabs.delete(tabId);
+  chrome.notifications.clear("privacyguard-camera-" + tabId);
+  chrome.storage.session.set({ activeCameraTabs: [...activeCameraTabs.entries()] });
+});
+
+// If the user clicks a camera notification, take them to the site using the camera.
+chrome.notifications.onClicked.addListener(notificationId => {
+  const tabId = Number(notificationId.replace("privacyguard-camera-", ""));
+  if (!Number.isInteger(tabId)) return;
+  chrome.tabs.update(tabId, { active: true }, tab => {
+    if (tab?.windowId !== undefined) chrome.windows.update(tab.windowId, { focused: true });
+  });
+});
+
+// Restore the latest active camera list when the background worker starts.
+chrome.storage.session.get("activeCameraTabs", data => {
+  for (const [tabId, details] of data.activeCameraTabs || []) {
+    activeCameraTabs.set(tabId, details);
+  }
 });
