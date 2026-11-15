@@ -24,6 +24,12 @@ The score is a simple estimation, not a instant determinant of a site's genuine 
 - Private cryptographic key headers
 - Possible bank account or routing numbers when introduced by a matching phrase
 
+### Scam conversation checker
+
+- A user-triggered scan checks up to 30,000 characters of visible page text for common scam signals, such as requests for passwords or one-time codes, urgent threats, suspicious payment methods, impersonation language, and unexpected prize/refund offers.
+- The scan runs locally in the browser. It does not send or store conversation text.
+- Results are clues, not proof that a person is a scammer. Scammers may use different wording, and legitimate messages can contain similar phrases. Verify identity through an official channel before sharing money or sensitive information.
+
 ### Gmail support
 
 PrivacyGuard includes best-effort support for Gmail's custom compose editor and Send button, including the Ctrl/Cmd+Enter shortcut. It reads the subject and message body when it can identify them. Gmail's interface changes over time, so this integration must be tested against current Gmail behavior and is not guaranteed to intercept every send path.
