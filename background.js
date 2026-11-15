@@ -76,6 +76,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true;
 });
 
+// Clear the old page's camera status when a tab navigates to a new address.
+// The new page will report again if it starts using a camera.
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (!changeInfo.url) return;
+  activeCameraTabs.delete(tabId);
+  chrome.notifications.clear("privacyguard-camera-" + tabId);
+  chrome.storage.session.set({ activeCameraTabs: [...activeCameraTabs.entries()] });
+});
+
 // Remove a tab's camera status when that tab is closed.
 chrome.tabs.onRemoved.addListener(tabId => {
   activeCameraTabs.delete(tabId);
