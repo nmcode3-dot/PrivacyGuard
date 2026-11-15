@@ -92,6 +92,15 @@
       <p id="cookie-clean-status" class="cookie-status" role="status">Click to check this website for likely tracking cookies.</p>
     </section>
 
+    <!-- User-triggered scam conversation check; scans visible page text locally. -->
+    <section class="cookie-card scam-card" aria-labelledby="scam-title">
+      <div class="section-heading"><div><p class="eyebrow">CURRENT PAGE</p><h2 id="scam-title">Scam conversation check</h2></div></div>
+      <p class="cookie-description">Check visible messages for common scam warning signs before you reply or pay.</p>
+      <button id="scam-check-button" class="cookie-button" type="button">Scan visible messages</button>
+      <p id="scam-check-status" class="cookie-status" role="status">Nothing is scanned until you click the button.</p>
+      <ul id="scam-check-findings" class="risk-reasons"></ul>
+    </section>
+
     <!-- Website risk section: popup.js calculates the score and inserts the findings. -->
     <section class="risk-card" aria-live="polite" aria-labelledby="risk-title">
       <div class="section-heading">
