@@ -766,84 +766,46 @@
   // SCAM CONVERSATION CHECKER
   // --------------------------------------------------
 
-  // Each category below creates 500 phrase combinations (25 starters x 20 endings).
-  // Matching complete phrases is more useful than flagging isolated words such as
-  // "Bitcoin" or "password", which can appear in perfectly harmless conversations.
-  function buildPhraseBank(starters, endings) {
-    return starters.flatMap(starter => endings.map(ending => starter + " " + ending));
-  }
-
-  const scamPhraseBanks = [
-    {
-      type: "Request for passwords or login details",
-      phrases: buildPhraseBank(
-        ["please send me your", "please share your", "tell me your", "provide your", "enter your", "type your", "reply with your", "message me your", "confirm your", "verify your", "we need your", "i need your", "support needs your", "our team needs your", "for security give us your", "to continue provide your", "to restore access enter your", "before we proceed share your", "kindly submit your", "can you give me your", "send over your", "forward your", "write down your", "read out your", "upload a copy of your"],
-        ["account password", "bank password", "email password", "email login", "bank login", "online banking details", "login credentials", "account credentials", "sign in details", "passphrase", "security answer", "recovery phrase", "wallet recovery phrase", "private key", "card PIN", "debit card PIN", "credit card PIN", "social media password", "work account password", "remote access password"]
-      )
-    },
-    {
-      type: "Request for a one-time or verification code",
-      phrases: buildPhraseBank(
-        ["send me your", "share your", "tell me the", "read me the", "reply with the", "forward the", "copy and send the", "enter the", "type in the", "confirm the", "provide the", "we need the", "support needs the", "our team needs the", "to verify you send the", "to unlock your account send the", "before we continue share the", "please disclose the", "message me the", "give me the", "submit your", "repeat the", "dictate the", "paste the", "upload the"],
-        ["one time password", "one-time code", "verification code", "security code", "login code", "sign in code", "two factor code", "2fa code", "authentication code", "authenticator code", "text message code", "SMS code", "email code", "bank confirmation code", "account recovery code", "password reset code", "MFA code", "OTP code", "six digit code", "six-digit verification number"]
-      )
-    },
-    {
-      type: "Urgent pressure or threats",
-      phrases: buildPhraseBank(
-        ["act now or", "respond immediately or", "verify today or", "complete this now or", "pay today or", "reply within one hour or", "you must act now because", "urgent action is required because", "final notice because", "this is your last chance because", "failure to respond means", "if you do not comply", "unless you pay now", "your account is at risk because", "we will close your account if", "we will suspend access if", "legal action will begin if", "the police will be contacted if", "your funds will be frozen unless", "your device will be locked unless", "your service ends today because", "immediate payment is required to avoid", "do not delay or face", "you have minutes before", "this warning expires before"],
-        ["your account is closed", "your account is suspended", "your account is permanently disabled", "your bank access is blocked", "your money is frozen", "your funds are seized", "your identity is cancelled", "your device is disabled", "your computer is locked", "your service is disconnected", "a warrant is issued", "police arrive at your home", "you are arrested", "you face prosecution", "you lose your refund", "your payment is forfeited", "your benefits are terminated", "your package is returned", "your account is deleted", "your access is permanently removed"]
-      )
-    },
-    {
-      type: "Suspicious payment method",
-      phrases: buildPhraseBank(
-        ["please pay using", "send the payment through", "make payment with", "settle the balance using", "purchase and send", "pay the fee with", "transfer the money using", "deposit funds into", "send funds by", "complete payment via", "we only accept", "the safest way is", "to release your funds use", "to avoid suspension pay with", "buy and send", "pay your tax using", "pay the delivery fee with", "send the amount in", "make a deposit through", "refund processing requires", "pay our agent with", "send the money to", "load funds onto", "pay the invoice in", "cover the charge using"],
-        ["gift cards", "Apple gift cards", "Google Play cards", "Steam gift cards", "Amazon gift cards", "iTunes cards", "prepaid debit cards", "vanilla prepaid cards", "Bitcoin", "cryptocurrency", "Ethereum", "USDT", "crypto wallet", "wire transfer", "Western Union", "MoneyGram", "cash deposit", "peer to peer transfer", "friends and family transfer", "payment app transfer"]
-      )
-    },
-    {
-      type: "Impersonation or fake support language",
-      phrases: buildPhraseBank(
-        ["i am calling from", "i am contacting you from", "this is a message from", "we are representatives of", "i work for", "i represent", "your case has been assigned to", "your account is managed by", "our security department at", "the official support team at", "this is the fraud department of", "i am an agent with", "we are the help desk for", "your government office is", "your bank's security team is", "this notice is from", "we have been sent by", "i am an officer with", "your technical support provider is", "the verification team at", "we are contacting you on behalf of", "your payment provider's team is", "i am a specialist from", "the investigation unit at", "your account recovery agent is from"],
-        ["your bank", "the IRS", "Social Security", "Medicare", "the police department", "the FBI", "the tax office", "Microsoft support", "Apple support", "Amazon support", "Google support", "PayPal security", "your credit union", "your card provider", "the post office", "the customs office", "the immigration office", "your internet provider", "the fraud prevention unit", "the government"]
-      )
-    },
-    {
-      type: "Prize, refund, or unexpected money offer",
-      phrases: buildPhraseBank(
-        ["you have won", "you are selected to receive", "you qualify for", "claim your", "collect your", "unlock your", "release your", "we are sending you", "a payment of", "a refund of", "your reward is", "your prize is", "you are entitled to", "an inheritance of", "you have been awarded", "your guaranteed return is", "we found an unclaimed", "your compensation payment is", "your grant payment is", "your lottery payout is", "you can receive", "your cash bonus is", "your settlement payment is", "your surprise gift is", "your winning amount is"],
-        ["a cash prize", "a lottery prize", "a free gift", "a guaranteed reward", "a large refund", "an unexpected refund", "an unclaimed payment", "an inheritance", "a government grant", "a tax refund", "a compensation payment", "a settlement payment", "a cash bonus", "a gift voucher", "a prize payout", "a no-risk investment return", "a guaranteed investment profit", "a reward for selected users", "a package of free money", "a special winnings payment"]
-      )
-    },
-    {
-      type: "Request to move to a private channel",
-      phrases: buildPhraseBank(
-        ["let us continue on", "message me privately on", "contact me directly on", "move this conversation to", "switch over to", "we should talk on", "for security use", "for faster support use", "send me a message through", "add me on", "i will explain it on", "continue our chat using", "leave this platform and use", "please download", "install this app and contact me on", "reach my personal account on", "talk to my manager on", "our agent will contact you via", "send your details through", "we can finish the process on", "use my private account on", "do not message here; use", "continue the support session on", "join my private chat on", "switch to an encrypted chat on"],
-        ["WhatsApp", "Telegram", "Signal", "Skype", "Google Chat", "Facebook Messenger", "Instagram DM", "Snapchat", "Discord", "Kik", "Line", "Viber", "WeChat", "Threema", "Wire", "Session", "a private chat", "my personal number", "a different messaging app", "an outside messaging service"]
-      )
-    },
-    {
-      type: "Suspicious link or account verification request",
-      phrases: buildPhraseBank(
-        ["click this link to", "open the link below to", "visit this page to", "use this URL to", "tap here to", "follow this link and", "go to this website to", "sign in through this link to", "enter your details here to", "use our portal to", "complete the form to", "confirm your account to", "restore access by", "unlock your profile by", "avoid suspension by", "validate your identity by", "update your payment details to", "secure your account by", "claim your refund by", "track your package by", "release the payment by", "verify your bank account by", "reset your password by", "confirm delivery by", "resolve the issue by"],
-        ["verify your account", "confirm your identity", "unlock your account", "restore your access", "avoid account closure", "update your password", "confirm your bank details", "validate your payment method", "claim your refund", "release your package", "prevent account suspension", "remove a security hold", "confirm your card", "update your personal information", "recover your profile", "activate your account", "review a suspicious transaction", "receive your prize", "complete a payment", "download a required security update"]
-      )
-    }
+  // These are deliberately short, broad warning words and phrases.
+  // A single match is enough to flag a possible warning sign.
+  // Words are matched as whole words to avoid accidental partial matches.
+  const scamKeywordGroups = [
+    { type: "Urgency or pressure", words: ["urgent", "immediately", "now", "today", "hurry", "warning", "final notice", "last chance", "act fast", "expires", "deadline", "suspended", "blocked", "locked", "frozen", "terminated", "limited time"] },
+    { type: "Account or identity", words: ["verify", "verification", "confirm", "account", "login", "sign in", "password", "passcode", "security code", "one-time code", "otp", "2fa", "pin", "identity", "recover", "reset", "access", "credentials"] },
+    { type: "Money or payment", words: ["payment", "pay", "fee", "refund", "money", "cash", "bank", "wire", "transfer", "deposit", "invoice", "tax", "prize", "winner", "winning", "reward", "gift card", "voucher", "inheritance", "grant", "bitcoin", "crypto", "wallet", "investment"] },
+    { type: "Links or downloads", words: ["click", "tap", "link", "URL", "website", "portal", "download", "install", "attachment", "open this", "visit", "sign in here", "update your details"] },
+    { type: "Impersonation or authority", words: ["support", "help desk", "security team", "bank", "IRS", "police", "government", "Microsoft", "Apple", "Amazon", "PayPal", "official", "agent", "representative", "department", "investigation"] },
+    { type: "Unusual contact or secrecy", words: ["WhatsApp", "Telegram", "Signal", "private chat", "personal number", "outside this app", "keep this secret", "do not tell", "confidential", "send me", "message me", "contact me"] }
   ];
 
+  // Escape special regular-expression characters before building a matcher.
+  function escapeKeyword(keyword) {
+    return keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
   // Check visible page text only when the user requests a scan from the popup.
-  // This does not read password fields, hidden content, or send text anywhere.
+  // The scan is local and does not read hidden fields or send text anywhere.
   function checkScamConversation() {
-    const pageText = (document.body?.innerText || "").slice(0, 30000).toLowerCase();
-    const findings = scamPhraseBanks
-      .filter(category => category.phrases.some(phrase => pageText.includes(phrase.toLowerCase())))
-      .map(category => category.type);
+    const pageText = (document.body?.innerText || "").slice(0, 30000);
+    const normalizedText = pageText.toLowerCase();
+    const matchedGroups = scamKeywordGroups.map(group => {
+      const matchedWords = group.words.filter(keyword => {
+        const escaped = escapeKeyword(keyword.toLowerCase());
+        return new RegExp("(^|[^a-z0-9])" + escaped + "($|[^a-z0-9])", "i").test(normalizedText);
+      });
+      return { type: group.type, matchedWords };
+    }).filter(group => group.matchedWords.length > 0);
+
+    const findings = matchedGroups.map(group =>
+      group.type + ": " + group.matchedWords.slice(0, 8).join(", ")
+    );
+    const matchCount = matchedGroups.reduce((total, group) => total + group.matchedWords.length, 0);
 
     return {
       findings,
-      level: findings.length >= 3 ? "high" : findings.length ? "caution" : "none",
-      phraseCounts: scamPhraseBanks.map(category => ({ type: category.type, count: category.phrases.length }))
+      matchedGroups,
+      level: matchedGroups.length >= 3 || matchCount >= 6 ? "high" : matchedGroups.length ? "caution" : "none",
+      note: "Individual words are clues, not proof of a scam. Read the message in context."
     };
   }
 
