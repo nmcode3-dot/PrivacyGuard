@@ -3,6 +3,13 @@
 A Chrome extension that helps people spot privacy risks before they share information or interact with websites. Made for OCSEF Hacks Hackathon.
 
 ## Download steps
+### 1) Download Github Zip Extension File
+![Download Github Zip](screenshots/repository.png)
+
+### 2) Go to chrome://extensions
+
+### 3) Load the unpacked file by turning on developer mode
+
 
 
 
