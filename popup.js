@@ -138,6 +138,9 @@
       { brand: "Xbox", names: ["xbox"], domains: ["xbox.com", "xboxlive.com"] }
     ];
 
+    let recognizedOfficialBrand = null;
+    let recognizedOfficialDomain = null;
+
     for (const entry of officialBrandDomains) {
       // Match a brand as a hostname word (separated by dots, hyphens, or
       // other non-letter characters), rather than inside unrelated words.
@@ -146,14 +149,44 @@
       );
       if (!brandAppears) continue;
 
-      const isOfficialDomain = entry.domains.some(domain =>
+      const matchedDomain = entry.domains.find(domain =>
         host === domain || host.endsWith("." + domain)
       );
 
-      if (!isOfficialDomain) {
+      if (matchedDomain) {
+        recognizedOfficialBrand = entry.brand;
+        recognizedOfficialDomain = matchedDomain;
+      } else {
         add(30, "The domain uses the name of " + entry.brand + " without matching one of its recognized official domains.");
-        break;
       }
+      break;
+    }
+
+    // Some official brands also operate shared file/CDN hosting domains.
+    // Those can contain customer-uploaded content, so don't auto-trust them.
+    const sharedHostingDomains = [
+      "googleusercontent.com", "amazonaws.com", "paypalobjects.com",
+      "fbcdn.net", "cdninstagram.com", "nflxvideo.net", "nflximg.net",
+      "githubusercontent.com", "githubassets.com", "redditmedia.com",
+      "licdn.com", "dropboxusercontent.com", "googlevideo.com"
+    ];
+    const isSharedHostingDomain = sharedHostingDomains.some(domain =>
+      host === domain || host.endsWith("." + domain)
+    );
+
+    // An HTTPS page on a recognized official brand domain gets a clean
+    // domain rating immediately. This is a domain allowlist, not a malware
+    // scan; shared user-content/CDN domains are deliberately excluded.
+    if (recognizedOfficialBrand && url.protocol === "https:" && !isSharedHostingDomain) {
+      return {
+        score: 100,
+        level: "low",
+        host,
+        reasons: [],
+        trustedDomain: true,
+        trustedBrand: recognizedOfficialBrand,
+        matchedDomain: recognizedOfficialDomain
+      };
     }
 
     // Known link-shortening services hide the destination until the link is opened.
