@@ -242,15 +242,22 @@
   function renderCombinedRating(urlResult, pageAudit) {
     if (urlResult.unavailable) return render(urlResult);
 
-    const reasons = [...urlResult.reasons, ...pageAudit.findings];
-    const score = Math.max(0, Math.min(100, urlResult.score - pageAudit.riskPoints));
+    // A recognized official HTTPS domain stays at 100/100 after the page scan.
+    // Page-level heuristics can flag normal links or scripts on legitimate sites;
+    // they must not override the explicit trusted-domain match.
+    const isTrustedDomain = urlResult.trustedDomain === true;
+    const reasons = isTrustedDomain ? [] : [...urlResult.reasons, ...pageAudit.findings];
+    const score = isTrustedDomain
+      ? 100
+      : Math.max(0, Math.min(100, urlResult.score - pageAudit.riskPoints));
     const level = score >= 70 ? "low" : score >= 40 ? "medium" : "high";
     render({
       score,
       level,
       host: urlResult.host,
       reasons,
-      pageCounts: pageAudit.counts
+      pageCounts: pageAudit.counts,
+      trustedDomain: isTrustedDomain
     });
 
     const status = $("page-scan-status");
