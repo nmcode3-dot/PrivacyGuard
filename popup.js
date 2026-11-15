@@ -140,6 +140,40 @@
     // Calculate and display the URL-based risk rating for the active tab.
     render(rateWebsite(tabs[0].url));
 
+    // Scan visible conversation text only after the user clicks the scam-check button.
+    const scamButton = $("scam-check-button");
+    const scamStatus = $("scam-check-status");
+    const scamFindings = $("scam-check-findings");
+    if (scamButton && scamStatus && scamFindings) {
+      scamButton.addEventListener("click", () => {
+        scamButton.disabled = true;
+        scamButton.textContent = "Scanning…";
+        scamStatus.textContent = "Checking visible page text on this device.";
+        scamFindings.replaceChildren();
+
+        chrome.tabs.sendMessage(tabs[0].id, { type: "PRIVACYGUARD_SCAN_SCAM_CONVERSATION" }, result => {
+          scamButton.disabled = false;
+          scamButton.textContent = "Scan again";
+          if (chrome.runtime.lastError || !result) {
+            scamStatus.textContent = "This page cannot be scanned. Try refreshing the tab and opening PrivacyGuard again.";
+            return;
+          }
+          if (!result.findings.length) {
+            scamStatus.textContent = "No common scam warning signs were found in the visible page text.";
+            return;
+          }
+          scamStatus.textContent = result.level === "high"
+            ? "Several warning signs found. Be very cautious."
+            : "A possible warning sign was found. Review before replying.";
+          result.findings.forEach(reason => {
+            const item = document.createElement("li");
+            item.textContent = reason;
+            scamFindings.appendChild(item);
+          });
+        });
+      });
+    }
+
     // Only offer cookie cleanup on regular HTTP or HTTPS websites.
     const cookieButton = $("cookie-clean-button");
     const cookieStatus = $("cookie-clean-status");
