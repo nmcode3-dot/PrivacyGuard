@@ -72,15 +72,82 @@
 
     if (url.hostname.includes("..")) add(20, "The domain contains an unusual sequence of dots.");
 
-    // Warn when a well-known brand name appears in a different domain.
-    const officialBrandDomains = {
-      google: "google.com", microsoft: "microsoft.com", apple: "apple.com",
-      amazon: "amazon.com", paypal: "paypal.com", facebook: "facebook.com",
-      instagram: "instagram.com", chase: "chase.com", netflix: "netflix.com"
-    };
-    for (const [brand, officialDomain] of Object.entries(officialBrandDomains)) {
-      if (host.includes(brand) && host !== officialDomain && !host.endsWith("." + officialDomain)) {
-        add(30, "The domain uses the name of " + brand + " without being its official domain.");
+    // Warn when a well-known brand name appears on an unrelated domain.
+    // Each entry includes the brand names that may appear in a hostname and
+    // the official domains that brand uses. A domain is accepted only when
+    // it is the exact official domain or a true subdomain of that domain.
+    const officialBrandDomains = [
+      { brand: "Google", names: ["google"], domains: [
+        "google.com", "google.co.uk", "google.ca", "google.com.au", "google.co.in",
+        "google.de", "google.fr", "google.co.jp", "googleusercontent.com",
+        "googleapis.com", "gstatic.com", "googlevideo.com"
+      ]},
+      { brand: "Microsoft", names: ["microsoft"], domains: [
+        "microsoft.com", "microsoftonline.com", "microsoft365.com", "office.com",
+        "office365.com", "outlook.com", "live.com", "sharepoint.com", "onedrive.com",
+        "azure.com", "windows.com", "msauth.net", "msftauth.net"
+      ]},
+      { brand: "Apple", names: ["apple"], domains: ["apple.com", "icloud.com"] },
+      { brand: "Amazon", names: ["amazon"], domains: [
+        "amazon.com", "amazon.co.uk", "amazon.ca", "amazon.de", "amazon.co.jp",
+        "amazon.com.au", "amazon.in", "amazonaws.com", "aboutamazon.com"
+      ]},
+      { brand: "PayPal", names: ["paypal"], domains: ["paypal.com", "paypalobjects.com"] },
+      { brand: "Facebook", names: ["facebook"], domains: ["facebook.com", "fb.com", "fbcdn.net"] },
+      { brand: "Instagram", names: ["instagram"], domains: ["instagram.com", "cdninstagram.com"] },
+      { brand: "Meta", names: ["meta"], domains: ["meta.com", "meta.ai"] },
+      { brand: "Chase", names: ["chase"], domains: ["chase.com", "jpmorganchase.com"] },
+      { brand: "Netflix", names: ["netflix"], domains: ["netflix.com", "nflxvideo.net", "nflximg.net"] },
+      { brand: "GitHub", names: ["github"], domains: ["github.com", "githubusercontent.com", "githubassets.com"] },
+      { brand: "GitLab", names: ["gitlab"], domains: ["gitlab.com"] },
+      { brand: "Wikipedia", names: ["wikipedia"], domains: ["wikipedia.org"] },
+      { brand: "Reddit", names: ["reddit"], domains: ["reddit.com", "redd.it", "redditmedia.com"] },
+      { brand: "LinkedIn", names: ["linkedin"], domains: ["linkedin.com", "licdn.com"] },
+      { brand: "Discord", names: ["discord"], domains: ["discord.com", "discord.gg", "discordapp.com"] },
+      { brand: "Zoom", names: ["zoom"], domains: ["zoom.us", "zoom.com"] },
+      { brand: "Dropbox", names: ["dropbox"], domains: ["dropbox.com", "dropboxusercontent.com"] },
+      { brand: "Adobe", names: ["adobe"], domains: ["adobe.com", "adobelogin.com"] },
+      { brand: "Cloudflare", names: ["cloudflare"], domains: ["cloudflare.com", "cloudflare.net"] },
+      { brand: "eBay", names: ["ebay"], domains: ["ebay.com", "ebay.co.uk", "ebay.ca", "ebay.de"] },
+      { brand: "Walmart", names: ["walmart"], domains: ["walmart.com"] },
+      { brand: "Target", names: ["target"], domains: ["target.com"] },
+      { brand: "Best Buy", names: ["bestbuy"], domains: ["bestbuy.com"] },
+      { brand: "Costco", names: ["costco"], domains: ["costco.com"] },
+      { brand: "Bank of America", names: ["bankofamerica"], domains: ["bankofamerica.com"] },
+      { brand: "Wells Fargo", names: ["wellsfargo"], domains: ["wellsfargo.com"] },
+      { brand: "Capital One", names: ["capitalone"], domains: ["capitalone.com"] },
+      { brand: "Citi", names: ["citi"], domains: ["citi.com", "citibank.com"] },
+      { brand: "American Express", names: ["americanexpress", "amex"], domains: ["americanexpress.com", "amex.com"] },
+      { brand: "Discover", names: ["discover"], domains: ["discover.com"] },
+      { brand: "Venmo", names: ["venmo"], domains: ["venmo.com"] },
+      { brand: "Zelle", names: ["zelle"], domains: ["zellepay.com"] },
+      { brand: "Robinhood", names: ["robinhood"], domains: ["robinhood.com"] },
+      { brand: "Fidelity", names: ["fidelity"], domains: ["fidelity.com"] },
+      { brand: "Charles Schwab", names: ["schwab"], domains: ["schwab.com"] },
+      { brand: "Vanguard", names: ["vanguard"], domains: ["vanguard.com"] },
+      { brand: "Intuit", names: ["intuit"], domains: ["intuit.com", "turbotax.com", "quickbooks.com"] },
+      { brand: "FedEx", names: ["fedex"], domains: ["fedex.com"] },
+      { brand: "UPS", names: ["ups"], domains: ["ups.com"] },
+      { brand: "USPS", names: ["usps"], domains: ["usps.com", "usps.gov"] },
+      { brand: "DHL", names: ["dhl"], domains: ["dhl.com"] },
+      { brand: "Spotify", names: ["spotify"], domains: ["spotify.com"] },
+      { brand: "Steam", names: ["steam"], domains: ["steampowered.com", "steamcommunity.com"] },
+      { brand: "Roblox", names: ["roblox"], domains: ["roblox.com"] },
+      { brand: "Nintendo", names: ["nintendo"], domains: ["nintendo.com"] },
+      { brand: "PlayStation", names: ["playstation"], domains: ["playstation.com"] },
+      { brand: "Xbox", names: ["xbox"], domains: ["xbox.com", "xboxlive.com"] }
+    ];
+
+    for (const entry of officialBrandDomains) {
+      const brandAppears = entry.names.some(name => host.includes(name));
+      if (!brandAppears) continue;
+
+      const isOfficialDomain = entry.domains.some(domain =>
+        host === domain || host.endsWith("." + domain)
+      );
+
+      if (!isOfficialDomain) {
+        add(30, "The domain uses the name of " + entry.brand + " without matching one of its recognized official domains.");
         break;
       }
     }
