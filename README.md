@@ -15,6 +15,9 @@ A Chrome extension that helps people spot privacy risks before they share inform
 ### Choose the Privacy Guard UNZIPPED Foler
 
 ![Privacy Guard Unzipped Folder](screenshots/choose-privacyguard.png)
+
+### The extension has been set up if all steps done properly
+
 ## Features
 
 ### Website risk rating
