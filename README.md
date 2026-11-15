@@ -2,6 +2,10 @@
 
 A Chrome extension that helps people spot privacy risks before they share information or interact with websites. Made for OCSEF Hacks Hackathon.
 
+## Download steps
+
+
+
 ## Features
 
 ### Website risk rating
