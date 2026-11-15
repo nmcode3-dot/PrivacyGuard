@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PrivacyGuard",
-  "version": "0.2.0",
+  "version": "1.1.0",
   "description": "Detect privacy risks and suspicious website signals before you share information.",
   "action": {
     "default_title": "PrivacyGuard",
