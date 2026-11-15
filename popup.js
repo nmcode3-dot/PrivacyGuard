@@ -134,6 +134,46 @@
     }
   }
 
+  // Combine the URL checks with findings from the actual page DOM.
+  function renderCombinedRating(urlResult, pageAudit) {
+    if (urlResult.unavailable) return render(urlResult);
+
+    const reasons = [...urlResult.reasons, ...pageAudit.findings];
+    const score = Math.max(0, Math.min(100, urlResult.score - pageAudit.riskPoints));
+    const level = score >= 70 ? "low" : score >= 40 ? "medium" : "high";
+    render({
+      score,
+      level,
+      host: urlResult.host,
+      reasons,
+      pageCounts: pageAudit.counts
+    });
+
+    const status = $("page-scan-status");
+    if (status) {
+      status.textContent = "Page checked: " + pageAudit.counts.links + " links, " +
+        pageAudit.counts.frames + " embedded frames, and " + pageAudit.counts.scripts +
+        " scripts. " + pageAudit.note;
+    }
+  }
+
+  function scanCurrentPage(tabId, urlResult) {
+    const status = $("page-scan-status");
+    const button = $("page-scan-button");
+    if (status) status.textContent = "Inspecting links, forms, downloads, ads, and embedded content…";
+    if (button) { button.disabled = true; button.textContent = "Scanning…"; }
+
+    chrome.tabs.sendMessage(tabId, { type: "PRIVACYGUARD_SCAN_PAGE_RISK" }, audit => {
+      if (button) { button.disabled = false; button.textContent = "Rescan page"; }
+      if (chrome.runtime.lastError || !audit) {
+        if (status) status.textContent = "Page inspection is unavailable on this tab. Refresh the website and try again.";
+        render(urlResult);
+        return;
+      }
+      renderCombinedRating(urlResult, audit);
+    });
+  }
+
   // Make sure Chrome's tabs API is available before trying to inspect the active tab.
   if (!globalThis.chrome?.tabs?.query) {
     setUnavailable("Could not read the active tab.");
@@ -148,8 +188,12 @@
       return;
     }
 
-    // Calculate and display the URL-based risk rating for the active tab.
-    render(rateWebsite(tabs[0].url));
+    // Rate the URL, then inspect the actual page before showing the final score.
+    const urlResult = rateWebsite(tabs[0].url);
+    render(urlResult);
+    const pageScanButton = $("page-scan-button");
+    if (pageScanButton) pageScanButton.addEventListener("click", () => scanCurrentPage(tabs[0].id, urlResult));
+    scanCurrentPage(tabs[0].id, urlResult);
 
     // Scan visible conversation text only after the user clicks the scam-check button.
     const scamButton = $("scam-check-button");

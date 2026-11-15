@@ -112,7 +112,7 @@
         <span id="risk-label" class="risk-label na">Checking</span>
       </div>
 
-      <!-- Numeric URL risk score and its maximum possible value. -->
+      <!-- Combined URL and page-content risk score out of 100. -->
       <div class="score-line">
         <strong id="risk-score" class="score">—</strong>
         <span class="score-total">/ 100</span>
@@ -124,7 +124,7 @@
       <!-- The current website's hostname is inserted here. -->
       <p id="site-name" class="site-name">Checking current website…</p>
 
-      <!-- The list below is populated with the URL warning signs found by popup.js. -->
+      <!-- The list below shows URL and page-content warning signs found by PrivacyGuard. -->
       <div class="findings">
         <p class="findings-title">What we found</p>
         <ul id="risk-reasons" class="risk-reasons">
@@ -132,8 +132,13 @@
         </ul>
       </div>
 
-      <!-- Explain the limits of the URL-based score. -->
-      <p id="risk-disclaimer" class="risk-disclaimer">This score checks URL patterns only. It is not a malware scan or a guarantee that a site is safe.</p>
+      <div class="page-scan-controls">
+        <button id="page-scan-button" class="cookie-button" type="button">Rescan page</button>
+        <p id="page-scan-status" class="cookie-status" role="status">Waiting to inspect this page.</p>
+      </div>
+
+      <!-- Explain the limits of the combined URL and page-content checks. -->
+      <p id="risk-disclaimer" class="risk-disclaimer">This score combines URL patterns with visible page structure, links, forms, downloads, ads, and embedded resources. It is a heuristic warning, not a malware scan or a guarantee.</p>
     </section>
 
     <!-- Static list of the protection features included in the extension. -->
