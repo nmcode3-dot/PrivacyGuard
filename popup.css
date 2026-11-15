@@ -270,3 +270,10 @@ h2 { margin: 0; font-size: 13px; font-weight: 650; letter-spacing: -.1px; }
 .cookie-button:hover { background: #eaf2ec; }
 .cookie-button:disabled { cursor: wait; opacity: .65; }
 .cookie-status { margin: 8px 0 0; color: var(--muted); font-size: 9px; line-height: 1.4; }
+
+
+/* Scam conversation checker results. */
+.scam-card { margin-top: 12px; }
+#scam-check-findings { margin: 8px 0 0; padding-left: 17px; color: #963c36; font-size: 10px; }
+#scam-check-findings:empty { display: none; }
+#scam-check-findings li { margin: 4px 0; }
