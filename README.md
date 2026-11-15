@@ -10,7 +10,7 @@ A Chrome extension that helps people spot privacy risks before they share inform
 
 ### 3) Load the unpacked file by turning on developer mode
 
-
+![Turn devloper mode on, turn load unpacked](screenshots/load-unpacked.png)
 
 
 ## Features
