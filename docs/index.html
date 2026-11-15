@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- Short description used by search engines and link previews. -->
-  <meta name="description" content="PrivacyGuard is a free Chrome extension that helps you notice potential privacy and security risks while browsing.">
+  <meta name="description" content="PrivacyGuard is a free Chrome extension that checks for sensitive information, suspicious websites, scam signals, camera activity, and tracking cookies.">
 
   <title>PrivacyGuard</title>
 
@@ -157,7 +157,7 @@
     <h1>Be protected with PrivacyGuard.</h1>
 
     <!-- Download the ZIP archive of the repository's main branch. -->
-    <a class="download" href="https://github.com/nmcode3-dot/PrivacyGuard/archive/refs/heads/feature/individual-scam-keywords.zip">Download PrivacyGuard</a>
+    <a class="download" href="https://github.com/nmcode3-dot/PrivacyGuard/archive/refs/heads/main.zip">Download PrivacyGuard</a>
 
     <!-- Step-by-step instructions for loading the unpacked extension in Chrome. -->
     <h2>Install PrivacyGuard</h2>
@@ -173,12 +173,14 @@
     <!-- Short overview of the extension's main features. -->
     <h2>What it does</h2>
     <ul class="feature-list">
-      <li>Warns when supported forms appear to contain sensitive information.</li>
-      <li>Alerts when it detects a website starting a camera stream, and lets you block or restore that website’s camera permission.</li>
-      <li>Checks website addresses for suspicious URL patterns.</li>
-      <li>Shows camera activity and available browser permission states in a small dashboard.</li>
-      <li>Can remove a limited list of likely analytics and advertising cookies from the current website when you click the cleaner.
-      <li>Scans visible conversation text for individual scam warning words and short phrases, then shows which terms matched.</li></li>
+      <li><strong>Sensitive-information protection:</strong> Flags common private details, such as email addresses, phone numbers, possible payment-card numbers, and recognizable keys or tokens, before supported forms are submitted.</li>
+      <li><strong>Gmail compose protection:</strong> Checks supported Gmail message content before sending. Gmail changes over time, so this protection is best-effort.</li>
+      <li><strong>Website risk rating:</strong> Checks website addresses for suspicious patterns and inspects page links, forms, downloads, redirects, embedded frames, and external resources for warning signs.</li>
+      <li><strong>Trusted-domain recognition:</strong> Recognizes listed official brand domains and their genuine subdomains. A trusted-domain match is not a guarantee that every page or account is safe.</li>
+      <li><strong>Camera alerts:</strong> Notifies you when a supported page starts a camera stream and lets you block or restore that site's camera permission.</li>
+      <li><strong>Live privacy dashboard:</strong> Shows detected camera activity and available camera, microphone, and location permission states for the current tab.</li>
+      <li><strong>Cookie cleaner:</strong> Lets you remove a limited list of likely analytics and advertising cookies from the current website. It leaves ordinary login cookies alone.</li>
+      <li><strong>Scam conversation checker:</strong> Scans visible page text on demand for 4,000 ranked single-word entries, grouped from clear scam signals to weaker clues. The entries include 160 distinct words; a match is a clue, not proof of a scam.</li>
     </ul>
 
     <!-- Explain what the extension does and does not collect. -->
