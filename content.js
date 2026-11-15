@@ -1045,15 +1045,15 @@
 
   // These category weights keep the 4,000 entries ordered by the risk context
   // they came from: credentials/codes first, then threats and money requests.
-  const scamCategoryStrength = [
-    96, // Passwords and login details
-    98, // One-time and verification codes
-    88, // Urgent pressure and threats
-    82, // Suspicious payment methods
-    62, // Impersonation and fake support
-    56, // Prizes, refunds, and unexpected money
-    42, // Moving to private channels
-    38  // Links and account verification
+  const scamCategoryFallback = [
+    35, // Passwords and login details
+    35, // One-time and verification codes
+    32, // Urgent pressure and threats
+    30, // Suspicious payment methods
+    25, // Impersonation and fake support
+    22, // Prizes, refunds, and unexpected money
+    18, // Moving to private channels
+    16  // Links and account verification
   ];
 
   // Turn each original phrase into exactly one single-word buzzword.
@@ -1070,7 +1070,9 @@
       );
       return {
         word,
-        score: Math.max(scamCategoryStrength[categoryIndex] || 25, scamWordStrength.get(word) || 25),
+        // A generic word inherits only a small category fallback. Strong scores
+        // come from the word itself, not merely from the phrase it came from.
+        score: scamWordStrength.get(word) || scamCategoryFallback[categoryIndex] || 15,
         category: category.type
       };
     })
