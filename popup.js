@@ -214,15 +214,16 @@
             return;
           }
           if (!result.findings.length) {
-            scamStatus.textContent = "No common scam warning signs were found in the visible page text.";
+            scamStatus.textContent = "No ranked scam buzzwords were found in the visible page text.";
             return;
           }
-          scamStatus.textContent = result.level === "high"
-            ? "Several warning signs found. Be very cautious."
-            : "A possible warning sign was found. Review before replying.";
-          result.findings.forEach(reason => {
+          scamStatus.textContent = result.findings.length + " matching words found from " +
+            result.buzzwordCount.toLocaleString() + " ranked entries (" +
+            result.uniqueBuzzwordCount.toLocaleString() + " unique words). Strongest signal: " +
+            result.findings[0].severity + ". Words are clues, not proof.";
+          result.findings.forEach(match => {
             const item = document.createElement("li");
-            item.textContent = reason;
+            item.textContent = match.severity + " — " + match.word + " (" + match.category + ")";
             scamFindings.appendChild(item);
           });
         });
