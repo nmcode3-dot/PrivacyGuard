@@ -21,7 +21,7 @@
       "all_frames": true
     }
   ],
-  "permissions": ["contentSettings", "activeTab", "cookies"],
+  "permissions": ["contentSettings", "activeTab", "cookies", "notifications", "storage"],
   "background": {
     "service_worker": "background.js"
   },
